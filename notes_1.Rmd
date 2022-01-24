@@ -945,3 +945,72 @@ apply(x, MARGIN = 1, FUN = sum)
 apply(x, MARGIN = 2, FUN = min)
 ```
 
+### Exercise 51:
+a) Using the *USPersonalExpenditure* data set, which command will find the mean expenditure for each of the five expenditure categories?
+    - apply(X = USPersonalExpenditure, MARGIN = 1, FUN = mean)
+    - apply(X = USPersonalExpenditure, MARGIN = 2, FUN = mean)
+        - The **first** one would give what we want. MARGIN = 1 has the function work over the rows. 
+
+```{r}
+apply(X = USPersonalExpenditure, MARGIN = 1, FUN = mean)
+```
+```{r}
+apply(X = USPersonalExpenditure, MARGIN = 2, FUN = mean)
+```
+
+b) Using the *USPersonalExpenditure* data set, which command will find the mean expenditure for each of the five expenditure categories?
+    - apply(X = USPersonalExpenditure, MARGIN = 1, FUN = sum)
+    - apply(X = USPersonalExpenditure, MARGIN = 2, FUN = sum)
+        - The second is what we want, MARGIN = 2 operates over columns, which will give us information on the years.
+        
+```{r}
+apply(X = USPersonalExpenditure, MARGIN = 1, FUN = sum)
+```
+```{r}
+apply(X = USPersonalExpenditure, MARGIN = 2, FUN = sum)
+```
+
+***
+\pagebreak
+# 6: Lists
+## 6.1: Creating and Examining Lists
+### Exercise 52
+Using the following list:
+a) Use str() to look at the structure of the list. Report the results.
+    - Employees is made up of 3 things, a character vector of names, a number vector of salaries and a vector of logicals.
+b) Use length() to find the number of elements in the list. Report the results.
+    - There are 3 elements in the list. This makes sense as we have names, salaries and union. Those vectors individual lengths is not accounted for here.
+
+```{r}
+Employees <- list(Name = c("Joe", "Kim", "Ann", "Bob"),
+Salary = c(56000, 67000, 60000, 55000),
+Union = c (TRUE, TRUE, FALSE, FALSE))
+
+str(Employees)
+paste("---")
+length(Employees)
+```
+
+***
+\pagebreak
+## 6.2: General List Operations
+### Exercise 53:
+Using the Employees list, guess the results of the following code:
+a) Employees[[2]]
+    - This returns the second item in this list, in this case it'd be the number vector for Salary.
+b) Employees$Salary
+    - This is equivalent to problem a). 
+c) Write a command involving [[ ]] that returns the "logical" vector Union from the Employees list
+d) Now write a command involving $ that returns the "logical" vector Union from the Employees list.
+
+```{r}
+# Tests
+## c)
+Employees[[3]]
+print("---")
+## d)
+Employees$Union
+```
+
+***
+## 6.3: Named List Elements

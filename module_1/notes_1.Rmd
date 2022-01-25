@@ -248,8 +248,7 @@ Write a command using c() that creates a vector containing the values: (3,7,2,8)
 c(3, 7, 2, 8)
 ```
 
-***
-\pagebreak
+
 ### Exercise 12:
 Write a command using matrix() that creates the following matrix:
 ```{r}

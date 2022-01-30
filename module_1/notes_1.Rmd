@@ -1354,4 +1354,157 @@ b) Pass the *table* object my.tab to barplot() to make a bar plot of the counts.
 my.tab %>% barplot()
 ```
 
-c) 
+c) Pass the *table* object my.tab to pie() to make a pie chart of the counts.
+```{r, out.width="60%"}
+my.tab %>% pie()
+```
+
+***
+\pagebreak
+# 10: Objects and Classes
+### Exercise 64:
+Guess the class of each of the objects below.
+
+a) class(c("a", "b", "c"))
+    
+    - I would assume that this is a character vector. It's a vector of characters after all! 
+
+b) class(c(3, 6, 1))
+
+    - This would be a numeric vector by the same logic.
+
+c) class(list(3, 5, 2))
+
+    - I believe this is just a list.
+    
+```{r}
+c("a", "b", "c") %>%
+    class()
+
+c(3, 6, 1) %>%
+    class()
+
+list(3, 5, 2) %>%
+    class()
+```
+
+### Exercise 65:
+a) Guess the class of **sqrt()**, then check your answer. 
+
+    - I would assume this would have the class of *function*.
+
+```{r}
+sqrt %>% 
+    class()
+```
+
+b) Guess the result of the command **is.function(sqrt)**. 
+
+    - This should return TRUE
+    
+```{r}
+sqrt %>%
+    is.function()
+```
+
+c) Using the following function, **apply.fun()**, guess the result of the following commands.
+
+```{r, echo=FALSE}
+apply.fun <- function(x, FUN) {
+    do.call(FUN, arg = list(x))
+}
+```
+
+    - apply.fun(x = 4, FUN = sqrt)
+        
+        - This will take the square root of 4 and return 2.
+    
+    - apply.fun(x = -3, FUN = abs)
+    
+        - This will take the absolute value of -3 and return 3.
+
+```{r, echo=FALSE}
+glue::glue("
+           The output of apply.fun(x = 4, FUN = sqrt) is {apply.fun(x = 4, FUN = sqrt)}.
+           The output of apply.fun(x = -3, FUN = abs) is { apply.fun(x = -3, FUN = abs)}.
+           ")
+```
+
+### Exercise 66
+Using the below variables, guess the result of the following commands.
+```{r}
+x <- c("a", "b", "c")
+y <- factor(c("a", "b", "c"))
+```
+
+a) 
+
+    - class(x)
+    
+        - Based on previous exercises we know this returns "Character"
+        
+    - typeof(x)
+    
+        - Based on the available types I feel like this would *also* return character.
+
+b) 
+
+    - class(y)
+    
+        - This should return "factor"
+    
+    - typeof(y)
+    
+        - I think this would return "character"
+        
+```{r, echo=FALSE}
+glue::glue("
+    x has the class {class(x)} and is of type {typeof(x)}
+    y has the class {class(y)} and is of type {typeof(y)}
+")
+```
+
+***
+\pagebreak
+# 11: Generic Functions and Methods
+## 11.2: Methods
+### Exercise 67:
+a) Use methods() to look at **summary()**'s methods. Do the same for **data.frame** and **factor**.
+```{r}
+summary %>%
+     methods()
+
+data.frame %>%
+    methods()
+
+factor %>%
+    methods()
+```
+
+\pagebreak
+b) Try the following commands and describe the results.
+```{r}
+x <- data.frame(x1 = c(4, 3, 6),
+x2 = c(4, 7, 9),
+x3 = c(1, 1, 3))
+summary(x)
+
+y <- factor(c("a", "a", "b", "c", "c", "c", "c"))
+summary(y)
+```
+
+Summary for x works on each column individually. This results in separate summary statistics for x1, x2 and x3.
+The summary for y works a bit differently. It seems to have just counted up the number of each "a", "b" and "c". 
+
+c) Compare the results of the following commands to those in part (b). 
+```{r}
+summary.data.frame(x)
+summary.factor(y)
+```
+
+The output here is identical to part (b). This makes sense as we're essentially doing the same thing, we just skip the middle man by applying the correct method of summary directly. 
+
+***
+\pagebreak
+# 13: Some R Programming Features
+## 13.1: The Logical Operations "And", "Or", and "Not"

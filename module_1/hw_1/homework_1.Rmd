@@ -177,3 +177,28 @@ summary(myData)
 ```
 
 This command provides the summary statistics, length, class and mode. 
+***
+\pagebreak
+
+# Textbook Exercises
+## B.2
+```{r}
+example(mean)
+```
+
+
+## B.9
+## B.4
+```{r}
+find("mean")
+```
+
+```{r}
+library(Hmisc)
+find("units")
+```
+
+```{r}
+sessioninfo::session_info()
+```
+

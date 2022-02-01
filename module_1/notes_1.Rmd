@@ -1508,3 +1508,221 @@ The output here is identical to part (b). This makes sense as we're essentially 
 \pagebreak
 # 13: Some R Programming Features
 ## 13.1: The Logical Operations "And", "Or", and "Not"
+### Exercise 68: 
+Guess the result of the following code.
+```{r, echo=FALSE}
+x <- 4
+y <- 7
+```
+
+a) x > 2 & y == 7
+
+    - TRUE (both conditions are met)
+
+b) x < 0 | y == 7
+
+    - TRUE (the right condition is met)
+
+c) !(x < 0)
+
+    - TRUE (x is NOT less than 0)
+
+```{r, echo=FALSE}
+glue::glue("
+           Is x > 2 AND is y == 7? {x > 2 & y == 7}
+           Is x < 0 OR is y == 7? {x < 0 | y == 7}
+           is x NOT less than 0? {!(x < 0)}
+           ")
+
+```
+
+### Exercise 69
+Guess the result of the following code:
+
+a) 10 < 20 | 15 < 16 & 9 == 10
+
+    - I have no clue this is impossible to read. I'm gonna go with false there has the be something that won't pass here.
+
+b) (10 < 20 | 15 < 16) & 9 == 10
+
+    - FALSE (the rightmost condition, 9 == 10 won't pass)
+
+c) 4 < 3 & (5 < 6 | 8 < 9)
+
+    - FALSE, 4 < 3 won't pass.
+
+d) (4 < 3 & 5 < 6) | 8 < 9
+
+    - TRUE
+    
+```{r}
+10 < 20 | 15 < 16 & 9 == 10
+(10 < 20 | 15 < 16) & 9 == 10
+4 < 3 & (5 < 6 | 8 < 9)
+(4 < 3 & 5 < 6) | 8 < 9
+```
+
+### Exercise 70
+Guess the result of the following code.
+
+a) c(FALSE, TRUE, FALSE) & c(TRUE, TRUE, FALSE)
+
+    - FALSE TRUE FALSE
+
+b) c(FALSE, TRUE, FALSE) | c(TRUE, TRUE, FALSE)
+
+    - TRUE TRUE FALSE
+
+c) !c(FALSE, TRUE, FALSE)
+
+    - TRUE FALSE TRUE
+    
+```{r}
+c(FALSE, TRUE, FALSE) & c(TRUE, TRUE, FALSE)
+
+c(FALSE, TRUE, FALSE) | c(TRUE, TRUE, FALSE)
+
+!c(FALSE, TRUE, FALSE)
+```
+
+### Exercise 71:
+Describe in words what the following command does:
+!is.na(x)
+
+This will check is a value ISNT an NA. So, if a value is, say, the integer 1 it will return TRUE for it. An NA will return false.
+
+### Exercise 72:
+Guess the result of the following commands given the vector:
+```{r}
+x <- c(1, 2, 6, 5)
+```
+
+a) !(x > 4)
+
+    - TRUE TRUE FALSE FALSE
+
+b) x > 4 & x < 6
+
+    - FALSE FALSE FALSE TRUE
+
+c) !(x > 4 & x < 6)
+
+    - TRUE TRUE TRUE FALSE
+
+d) x > 4 | x < 6
+
+    - TRUE TRUE TRUE TRUE
+    
+```{r}
+!(x > 4)
+x > 4 & x < 6
+!(x > 4 & x < 6)
+x > 4 | x < 6
+```
+
+***
+\pagebreak
+## 13.2: User-Defined Functions
+### Exercise 74
+
+Are the two functions the same?
+
+```{r}
+f1 <- function(x) {
+    y <- x + 1
+    return(y)
+}
+```
+
+```{r}
+f2 <- function(x) {
+    y <- x + 1
+    y
+}
+```
+
+Yes, these two functions are the same. R returns any value on its own before the closing brackets. This is purely a stylistic difference left to user preference.
+
+### Exercise 75:
+In the following code which is the *formal* argument which is the *actual* argument.
+
+g <- function(x) {
+    x^2 - 1
+}
+z <- 2
+g(x = z)
+
+    - **x** is the formal argument but **z** is the actual argument.
+    
+### Exercise 76:
+
+a) Write a function that takes two arguments and returns their relative difference. 
+
+\[\left|\frac{x-y}{y}\right|\]
+
+```{r}
+    relative_difference <- function(x, y) {
+        ret_val <- ((x - y) / y) |> 
+            abs()
+        
+        ret_val
+    }
+```
+
+b) What happens when y = 0? What happens when x = 0 AND y = 0?
+
+    - y = 0: 
+    
+        - Inf
+        
+    - x = 0 AND y = 0:
+    
+        - NaN
+        
+c) Rewrite your function so that it specifies a *default* value of 1 for y.
+
+```{r}
+    relative_difference <- function(x, y = 1) {
+        ret_val <- ((x - y) / y) |> 
+            abs()
+        
+        ret_val
+    }
+```
+
+### Exercise 77:
+Write a function that takes a vector argument **x** and returns a *list* containing the mean, median, standard deviation and range of **x**.
+
+```{r}
+summary_statistics <- function(vector) {
+    mean <- mean(vector)
+    median <- median(vector)
+    sd <- sd(vector)
+    range <- range(vector)
+    
+    list(mean, median, sd, range)
+}
+```
+
+###
+Exercise 78: 
+What do the ...'s mean when it says list(...) under usgae in lists help menu?
+
+That refers to the objects you're passing into the list function.
+
+### Exercise 79:
+a) Write a function that takes two vectors x and y and returns the maximum value in the two vectors combined.
+
+```{r}
+max_value <- function(vector_1, vector_2) {
+    max(vector_1, vector_2)
+}
+```
+
+b) Modify your function so that it uses ... to take a *variable number* of vectors as arguments and returns the maximum value in all the vectors combined.
+
+```{r}
+max_value <- function(...) {
+    max(c(...))
+}
+```

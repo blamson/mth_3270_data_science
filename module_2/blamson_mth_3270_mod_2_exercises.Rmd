@@ -213,3 +213,197 @@ This plot is trying to use Cartesian coordinates for two different categorical v
 ***
 \pagebreak
 ## 4.2: More on Aesthetic Mappings
+### Exercise 8
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, color = cyl))
+```
+
+a) Reproduce the plot, but with cyl mapped to the size aesthetic (instead of color). How does the plot differ from the one above?
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, size = cyl))
+```
+
+It makes the scatterplot a lot busier but instead of the number of the cylinder column determing the points color, it now determines its size. Bigger cylinder is represented by a bigger point. 
+
+b) What happens when you try to map cyl to the shape aesthetic?
+
+- It throws an error "a continuous variable can not be mapped to shape. This is particularly weird because of the following:
+
+```{r}
+unique(mpg$cyl) %>% typeof()
+```
+
+c) What happens when you map the "logical" values in displ < 5 to an aesthetic property?
+
+```{r}
+ggplot(data = mpg) +
+    geom_point(mapping = aes(x = displ, y = hwy, color = displ < 5))
+```
+
+We get a scatterplot with two colors, blue and red. Any of the points left of 5 displ are blue, all to the right of 5 are red.
+
+d) What happens when you map the same variable to multiple aesthetics? 
+
+- Map hwy to *both* y and color. 
+
+- Map hwy to y, color, *and* size.
+
+```{r}
+ggplot(data = mpg) +
+    geom_point(mapping = aes(x = displ, y = hwy, color = hwy))
+```
+
+Hwy now has both a positional and shaded component. Values high on the y axis are a lighter shade of blue.
+
+```{r}
+ggplot(data = mpg) +
+    geom_point(mapping = aes(x = displ, y = hwy, color = hwy, size = hwy))
+```
+
+Similar to the previous plot, but now values higher on the y-axis also get progressively larger.
+
+***
+\pagebreak
+### Exercise 9
+You can set the color aesthetic of the points *manually* in the geom_\*() function, *outside* aes(). What happens when you try and do this inside of aes()?
+
+- It just creates a legend that says the color represents blue, whatever that means. 
+
+```{r}
+ggplot(data = mpg) +
+    geom_point(mapping = aes(x = displ, y = hwy, color = "blue"))
+```
+
+***
+## 4.3: More on Layers
+### Exercise 10:
+Try and predict what the following graph will look like and predict your answer.
+
+a)
+- What we will see from the below code is displacement on the x-axis, highway MPG on the y-axis and a color shaded component based on the type of drive train. Also there will be a line of best fit applied to the plot as well.
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
+    geom_point(mapping = aes(color = drv)) +
+geom_smooth()
+```
+
+b) 
+- Similar plot as last time, but we will get a different smooth line per drive. 
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
+    geom_point() +
+    geom_smooth(mapping = aes(color = drv))
+```
+
+***
+\pagebreak
+### Exercise 11:
+a) Modify the command, ggplot(data = mpg), so that the following layer is added to the plot.
+
+```{r}
+ggplot(data = mpg) +
+    geom_boxplot(mapping = aes(x = drv, y = displ))
+```
+
+We get a boxplot showing summary statistics of placement based on different values of drv. 
+
+b) What happens if you use geom_col() in place of geom_boxplot()?
+
+```{r}
+ggplot(data = mpg) +
+    geom_col(mapping = aes(x = drv, y = displ))
+```
+
+This shows a box plot of the sum of displacements based on the type of drv.
+
+***
+\pagebreak
+### Exercise 12:
+
+a) Use ggplot() and geom_histogram() to make a histogram of hwy. 
+
+```{r}
+ggplot(data = mpg) +
+    geom_histogram(aes(x = hwy))
+```
+
+b) Replace geom_histogram() in your command with geom_density.
+
+```{r}
+ggplot(data = mpg) +
+    geom_density(aes(x = hwy))
+```
+
+c) Stack both geom_histogram and geom_density on the same plot.
+
+```{r}
+ggplot(mpg, mapping = aes(x = hwy)) +
+    geom_histogram(mapping = aes(y = stat(density))) +
+    geom_density()
+```
+
+We have both the histogram and the density plot on the same graphic. 
+
+***
+\pagebreak
+## 4.4: More on Faceting
+### Exercise 13:
+a) Which graph do you prefer?
+
+```{r}
+ggplot(data = mpg) +
+    geom_histogram(mapping = aes(x = displ, color = drv))
+```
+
+```{r}
+ggplot(data = mpg) +
+    geom_histogram(mapping = aes(x = displ, fill = drv))
+```
+
+I think the second plot is far more legible. I much prefer it, though it could probably use some outlines as well.
+
+b) Alter the given code to utilize facet_wrap(), with facets = ~ drv. 
+
+```{r}
+ggplot(data = mpg, aes(x = displ)) +
+    geom_histogram() +
+    facet_wrap(facets = ~ drv)
+```
+
+c) Add another aesthetic mapping, fill = drv to the previous plot.
+
+```{r}
+ggplot(data = mpg, aes(x = displ, fill = drv)) +
+    geom_histogram() +
+    facet_wrap(facets = ~ drv)
+```
+
+***
+\pagebreak
+## 4.5: Statistical Transformations
+### Exercise 14:
+a) What is the default type of **geometric object**? 
+
+- **pointrange**
+
+b) Verify that **geom_pointrange** can be used to duplicate the function of stat_summary.
+
+```{r}
+grouped_by_cut <- data.frame(
+    cut = c("Fair", "Good", "Very Good",
+            "Premium", "Ideal"),
+    lower = c(43.0, 54.3, 56.8, 58.0, 43.0),
+    upper = c(79.0, 67.0, 64.9, 63.0, 66.7),
+    median = c(65.0, 63.4, 62.1, 61.4, 61.8))
+ggplot(data = grouped_by_cut) +
+    geom_pointrange(mapping = aes(x = cut,
+                                  y = median,
+                                  ymin = lower,
+                                  ymax = upper))
+```
+

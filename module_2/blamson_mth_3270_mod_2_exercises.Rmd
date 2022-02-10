@@ -6,7 +6,7 @@ output:
     pdf_document:
         dev: png
         includes:
-            in_header: "hw_2/preamble.tex"
+            in_header: "preamble.tex"
 editor_options: 
   chunk_output_type: console
 ---
@@ -393,7 +393,7 @@ a) What is the default type of **geometric object**?
 
 b) Verify that **geom_pointrange** can be used to duplicate the function of stat_summary.
 
-```{r}
+```{r, echo=TRUE}
 grouped_by_cut <- data.frame(
     cut = c("Fair", "Good", "Very Good",
             "Premium", "Ideal"),
@@ -405,5 +405,113 @@ ggplot(data = grouped_by_cut) +
                                   y = median,
                                   ymin = lower,
                                   ymax = upper))
+```
+
+***
+### Exercise 15 / 16
+Look under computed variables in the help page for stat_smooth(). What statistical values does it compute?
+
+- predicted value, lower and upper pointwise confidence intervals.
+
+What does geom_col()? How does it differ from geom_bar?
+
+- geom_bar makes the height of the bars reference the *count* of that value, in other words it references the *frequency* of a variable in a data set. Geom_col on the other hand uses values in the data itself as the height. 
+
+***
+\pagebreak
+## 4.6: Position Adjustments 
+### Exercise 17
+What is geom_bar()'s default **position adjustment**? 
+
+- **stack**
+
+What is the default position adjustment for geom_point()?
+
+- **identity**
+
+### Exercise 18:
+a) **Overplotting** is when points in a scatterplot overlap? What's the problem with the following plot? **Hint:** The mpg data set contains 234 observations.
+
+```{r}
+ggplot(data = mpg) +
+    geom_point(mapping = aes(x = cty, y = hwy))
+```
+
+There are definitely not 234 points on this map. It's misrepresenting the density of the points because they're overlapping. It's not an honest representation of the data.
+
+\pagebreak
+
+b) Re-run the command above using position = "jitter". Describe the difference.
+
+```{r}
+ggplot(data = mpg) +
+    geom_point(mapping = aes(x = cty, y = hwy), position = "jitter")
+```
+
+The dots are actually allowed to overlap here! It looks far more natural and doesn't so neatly align with the grid. Tinkering with it a different formation of the points is generated every time. That's due to the random noise that's generated to encourage less overlapping. 
+
+c) Jittering is a very common practice with scatterplots, so common in fact there is a geom for it! Use it here.
+
+```{r}
+ggplot(data = mpg) +
+    geom_jitter(mapping = aes(x = cty, y = hwy))
+```
+
+\pagebreak
+
+d) Another solution to overplotting is setting the opacity value lower.
+
+```{r}
+ggplot(data = mpg) +
+    geom_point(mapping = aes(x = cty, y = hwy), alpha = 0.2)
+```
+
+This is interesting, I suppose this is similar to having a shaded visual component to the plot. The darker the points the more points there are, because enough .2 opacity points still creates a dark circle. So this allows you to show density without adding in random noise. 
+
+***
+\pagebreak
+## 4.7: Coordinate Systems
+### Exercise 19: 
+Using the code provided flip the coordinates of the boxplot to make it horizontal.
+
+```{r, echo=TRUE}
+ggplot(data = mpg) +
+    geom_boxplot(mapping = aes(x = class, y = cty)) +
+    coord_flip()
+```
+
+***
+\pagebreak
+### Exercise 20:
+What does the given plot tell you about city and highway mpg? Why is coord_fixed() important? What does geom_abline() do?
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
+    geom_point() +
+    coord_fixed() +
+    geom_abline()
+```
+
+What this shows is that highway miles per gallon is pretty much always higher than city miles per gallon. That's what geom_abline() is for. It's a line with a slope of 1, so points being above or below that line give information about which (x or y) is larger for a specific point. And, with all of points together, you get a story about a deeper relationship! coord_fixed() is very useful for this as well, as it forces the same scale for the x and y values. 
+
+***
+\pagebreak
+## 4.10: Mosaic Plots
+### Exercise 21:
+a) Make a mosaic plot of the cut and color variables in the **diamonds** data set. 
+
+```{r, echo=TRUE}
+# ggplot(data = diamonds) +
+#     ggmosaic::geom_mosaic(
+#         mapping = aes(x = ggmosaic::product(cut, color)
+#         )
+#     )
+```
+
+This code throws an error. I had to finish this up at home, I remember in class that you mentioned there is a typo in this problem. I'm not sure what that typo is so I unfortunately cannot complete this exercise! I can at least do part c though.
+
+c) Generate a table of color and cut.
+```{r}
+table(diamonds$color, diamonds$cut)
 ```
 

@@ -1,0 +1,305 @@
+---
+title: "Data Science Module 3 Exercises"
+author: "Brady Lamson"
+date: "2/14/2022"
+output:
+    pdf_document:
+        dev: png
+        includes:
+            in_header: "preamble.tex"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+    echo = TRUE,
+    out.width = "70%"
+    )
+library(dplyr)
+library(ggplot2)
+library(nycflights13)
+```
+
+# 4: Data Wrangling
+## 4.2: 
+Extracting Columns with select()
+
+### Exercise 1
+a) This will pull only the years and days from the flights data set.
+
+b) This pulls all the columns between year and day, inclusive.
+
+c) This pulls all columns *except* year and day.
+
+***
+
+### Exercise 2:
+a) This will pull all column names starting with "sched", of which there are 2 columns in this data set. (sched_dep_time and sched_arr_time)
+
+b) Same as (a) but with columns starting with "arr" (arr_time and arr_delay).
+
+c) Pulls all columns starting either with "dep_" or "arr_".
+
+***
+
+\pagebreak
+## 4.4: Filtering Rows with filter()
+### Exercise 3:
+
+```{r, results='hide'}
+# A
+dplyr::filter(flights, arr_delay >= 120)
+```
+
+```{r, results='hide'}
+# B 
+flights %>%
+    dplyr::filter(dest %in% c("IAH", "HOU"))
+```
+
+```{r, results='hide'}
+# C
+flights %>%
+    dplyr::filter(carrier %in% c("UA", "AA", "DL"))
+```
+
+```{r, results='hide'}
+# D
+flights %>%
+    dplyr::filter(month %in% 7:9)
+```
+
+```{r, results='hide'}
+# E
+flights %>%
+    dplyr::filter(dep_time %in% 0:600)
+```
+
+```{r, results='hide'}
+# F
+flights %>%
+    dplyr::filter(
+        carrier == "UA", 
+        month == 7, 
+        arr_delay >= 120
+    )
+```
+
+***
+\pagebreak
+## 4.5: Arranging Rows with arrange()
+### Exercise 4:
+
+```{r, results='hide'}
+# A
+flights %>%
+    dplyr::arrange(dep_delay, arr_delay)
+```
+
+```{r, results='hide'}
+# B
+flights %>%
+    dplyr::arrange(
+        dplyr::desc(dep_delay),
+        dplyr::desc(arr_delay)
+    )
+```
+
+```{r, results='hide'}
+# C
+flights %>%
+    dplyr::arrange(dep_time)
+```
+
+```{r, results='hide'}
+# D
+flights %>%
+    dplyr::arrange(dplyr::desc(dep_time))
+```
+
+```{r, results='hide'}
+# E
+flights %>%
+    dplyr::arrange(distance)
+```
+
+```{r, results='hide'}
+# F
+flights %>%
+    dplyr::arrange(dplyr::desc(distance))
+```
+
+***
+\pagebreak
+### Exercise 5:
+
+```{r}
+x <- data.frame(x1 = c(2, 1, NA, 8, 7, 5, 4),
+x2 = c("a", NA, "c", "d", "c", "a", "d"),
+stringsAsFactors = FALSE)
+```
+
+
+The following code will sort the data with NAs at the top of the *first* column.
+
+```{r}
+x %>%
+    dplyr::arrange(is.na(x1))
+```
+
+
+The following code will sort the data with NAs at the bottom of the *first* column.
+
+```{r}
+x %>%
+    dplyr::arrange(
+        dplyr::desc(is.na(x1))
+    )
+```
+
+***
+\pagebreak
+## 4.6: Create New Variables (Columns) with mutate()
+### Exercise 6:
+
+```{r, results='hide'}
+flights %>%
+    dplyr::mutate(travel_time = arr_time - dep_time)
+```
+
+The arrival and departure time use totally different units than air time. The former are units of time, so 600 is 6:00am, whereas with air time 600 would be 600 minutes. They aren't equivalent. 
+
+***
+### Exercise 7:
+```{r}
+flights_small <- select(
+    .data = flights, 
+    year:day, 
+    ends_with("delay"), 
+    distance,
+    air_time)
+```
+
+```{r}
+dplyr::mutate(
+    .data = flights_small,
+    gain = dep_delay - arr_delay,
+    hours = air_time / 60,
+    gain_per_hour = gain / hours
+    )
+```
+
+The variable gain_per_hour does get computed! 
+
+***
+\pagebreak
+## 4.7: Renaming Variables (Columns) with rename()
+### Exercise 8:
+
+```{r}
+z <- data.frame(
+    z1 = c(5, 4, 3),
+    z2 = c("a", "c", "b"),
+    z3 = c(14, 22, 13))
+```
+
+```{r}
+z %>%
+    dplyr::rename(
+        new_z1 = z1,
+        new_z2 = z2,
+        new_z3 = z3
+    )
+```
+
+***
+\pagebreak
+## 4.8: Summarize Data with summarize()
+
+```{r}
+not_cancelled <- filter(.data = flights, !is.na(dep_delay), !is.na(arr_delay))
+```
+
+### Exercise 9:
+
+```{r}
+#A
+
+not_cancelled %>%
+    dplyr::summarise(
+        median_dep_delay = median(dep_delay),
+        median_arr_delay = median(arr_delay)
+    )
+```
+
+```{r}
+# B
+not_cancelled %>%
+    dplyr::summarise(
+        max_dep_delay = max(dep_delay),
+        max_arr_delay = max(arr_delay)
+    )
+```
+
+```{r}
+not_cancelled %>%
+    dplyr::summarise(
+        shortest_dep_delay = min(dep_delay),
+        shortest_arr_delay = min(arr_delay)
+    )
+```
+
+***
+\pagebreak
+### Exercise 10:
+a) The following code will give you the total count of rows in the data set. 
+
+```{r}
+summarize(.data = not_cancelled,
+          total_flights = n())
+```
+
+
+b) This counts the *number* of flights that have a delay of an hour or more. 
+
+```{r}
+summarize(.data = not_cancelled,
+          hour_arr_delay_total = sum(arr_delay > 60))
+```
+
+
+c) This returns the ratio of flights with a delay of an hour or more compared to the total number of flights in the data set.
+
+```{r}
+summarize(.data = not_cancelled,
+          hour_arr_delay_proportion = sum(arr_delay > 60) / n())
+```
+
+***
+\pagebreak
+## 4.9: Applying summarize() to Groups using group_by()
+### Exercise 11:
+
+```{r}
+# A
+
+by_dest <- group_by(.data = flights, dest)
+
+delay_by_dest <- summarize(
+    .data = by_dest, 
+    mean_arr_delay = mean(arr_delay, na.rm = TRUE)
+    )
+```
+
+delay_by_dest gives a breakdown of the average delay by the location of travel.
+
+```{r}
+# B
+by_dest <- group_by(.data = flights, dest)
+
+delay_dist_by_dest <- summarize(
+    .data = by_dest,
+    mean_dist = mean(distance, na.rm = TRUE),
+    mean_arr_delay = mean(arr_delay, na.rm = TRUE)
+)
+```
+

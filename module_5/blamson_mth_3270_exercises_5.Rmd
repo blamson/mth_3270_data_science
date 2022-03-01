@@ -6,8 +6,9 @@ output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, out.width = "60%")
 library(dplyr)
+library(ggplot2)
 ```
 
 # 9: Statistical Foundations
@@ -24,10 +25,35 @@ for(i in 1:1000) {
 }
 ```
 
-```{r, echo=FALSE}
+```{r, echo=TRUE}
+#B
+sample_mean <- mean(sample_mean_vec) %>% round(digits = 3)
+sample_standard_error <- sd(sample_mean_vec) %>% round(digits = 3)
+
 glue::glue("
-    The mean of the sample mean vector is approximately {mean(sample_mean_vec) %>% round(digits = 3)},
-    and the standard error of the vector is approximately {sd(sample_mean_vec) %>% round(digits = 3)}.
+    The mean of the sample mean vector is approximately {sample_mean},
+    and the standard error of the vector is approximately {sample_standard_error}.
 ")
 ```
+c) We can see that both values we got are very close to their theoretical values. The theoretical mean would be 50 and we can calculate the theoretical standard error, $\sigma / \sqrt{n} = 15/\sqrt{10} = 4.74342$. 
 
+```{r}
+# D
+
+ggplot(data = data.frame(sample_mean_vec)) +
+    geom_histogram(
+        mapping = aes(x = sample_mean_vec, y = stat(density)), 
+        binwidth = 1, 
+        color = "black") +
+    geom_function(
+        fun = dnorm, 
+        args = list(mean = 50, sd = 15/sqrt(10)), 
+        color = "blue") +
+    labs(title = "Sampling Distribution")
+```
+
+The blue line represents an idealized normal distribution. What we can see is that our simulation comes incredibly close. The center is right around 50, the shape follows the same curve and the density matches as well. 
+
+***
+\pagebreak
+### Exercise 2

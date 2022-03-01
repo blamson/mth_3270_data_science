@@ -1,0 +1,33 @@
+---
+title: "Data Science Module 5 Exercises"
+author: "Brady Lamson"
+date: "2/28/2022"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+```
+
+# 9: Statistical Foundations
+## 9.3: Simulations
+### Exercise 1:
+
+```{r}
+# A
+sample_mean_vec <- c()
+
+for(i in 1:1000) {
+    sim_sample <- rnorm(n = 10, mean = 50, sd = 15)
+    sample_mean_vec <- c(sample_mean_vec, mean(sim_sample))
+}
+```
+
+```{r, echo=FALSE}
+glue::glue("
+    The mean of the sample mean vector is approximately {mean(sample_mean_vec) %>% round(digits = 3)},
+    and the standard error of the vector is approximately {sd(sample_mean_vec) %>% round(digits = 3)}.
+")
+```
+

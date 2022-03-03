@@ -2,7 +2,9 @@
 title: "Data Science Module 5 Exercises"
 author: "Brady Lamson"
 date: "2/28/2022"
-output: pdf_document
+output: 
+    pdf_document:
+        dev: png
 ---
 
 ```{r setup, include=FALSE}
@@ -231,3 +233,214 @@ ggplot(data = Snakes) +
 ```
 
 Here it is a lot easier to notice the outlier, it's the value in the top left.
+
+***
+\pagebreak
+## 9.6: Statistical Models: Explaining Variation
+### Exercise 5
+
+```{r}
+SnakeID <- 1:9
+Ln <- c(85.7, 64.5, 84.1, 82.5, 78.0, 81.3, 71.0, 86.7, 78.7)
+Wt <- c(331.9, 121.5, 382.2, 287.3, 224.3, 245.2, 208.2, 393.4, 228.3)
+Snakes <- data.frame(SnakeID, Ln, Wt)
+```
+
+```{r}
+ggplot(data = Snakes, mapping = aes(x = Ln, y = Wt)) +
+geom_point() +
+geom_smooth(method = "lm", se = FALSE) +
+ggtitle("Scatterplot of Weights vs Lengths")
+```
+
+```{r}
+my.reg <- lm(Wt ~ Ln, data = Snakes)
+summary(my.reg)
+```
+
+From the output of summary(), the equation of the fitted line is:
+
+\[\hat{Y} = -601.08 + 10.99x\]
+
+Obtain the predicted weight for a snake whose length is 80cm in two ways:
+
+1: By plugging 80 into the equation for x.
+
+```{r}
+fitted_line <- function(x) {
+    -601.08 + (10.99*x)
+}
+
+fitted_line(80)
+```
+2: By using predict
+
+```{r}
+predict(my.reg, newdata = data.frame(Ln = 80))
+```
+
+b) Each additional cm of elongation typically adds around 10.99 units of weight to the snake. 5cm will add 55 units of weight. 
+
+***
+\pagebreak
+### Exercise 6
+
+```{r}
+SF <- dplyr::filter(
+    .data = nycflights13::flights,
+    dest == "SFO",
+    !is.na(arr_delay)
+)
+```
+
+```{r, out.width="50%"}
+ggplot(data = SF, mapping = aes(x = hour, y = dep_delay)) +
+    geom_point() +
+    geom_smooth(method = "lm") +
+    xlab("Scheduled Hour of Departure") + ylab("Departure Delay (Minutes)") +
+    coord_cartesian(ylim = c(-30, 200))
+```
+
+a) Use lm() and summary() to obtain the equation of the fitted regression line, with dep_delay as the response and hour as the explanatory variable.
+
+```{r}
+flight_reg <- lm(dep_delay ~ hour, data = SF)
+summary(flight_reg)
+```
+
+The equation of the line is:
+\[\hat{Y} = -10.956 + 1.86X\]
+
+b) Obtained the predicted departure delay for a flight whose departure hour is 15 in two ways. Plug in 15 into the equation and use the predict command.
+
+```{r}
+-10.956 + (1.86 * 15)
+```
+
+```{r}
+predict(flight_reg, newdata = data.frame(hour = 15))
+```
+
+c) The departure delay increases by around 1.86 minutes for every hour that passes. 
+
+***
+\pagebreak
+### Exercise 7
+
+```{r}
+SnakeID <- 1:9
+Ln <- c(85.7, 64.5, 84.1, 82.5, 78.0, 81.3, 71.0, 86.7, 78.7)
+Wt <- c(331.9, 121.5, 382.2, 287.3, 224.3, 245.2, 208.2, 393.4, 228.3)
+Snakes <- data.frame(SnakeID, Ln, Wt)
+```
+
+```{r}
+snake_reg <- lm(Wt ~ Ln, data = Snakes)
+```
+
+a) What class of object is returned by lm()
+
+```{r}
+class(snake_reg)
+```
+
+```{r}
+#B
+
+is.list(snake_reg)
+```
+
+```{r}
+#C
+
+names(snake_reg)
+```
+
+```{r}
+# D
+
+Snakes <- dplyr::mutate(
+    Snakes, FittedVals = snake_reg$fitted.values
+)
+
+ggplot(
+    Snakes, aes(x = Ln, y = FittedVals)
+) +
+    geom_point() +
+    ggtitle("Scatterplot of Fitted Values vs Lengths")
+```
+
+The plot of fitted values looks pretty much like a straight line, this makes sense considering we got these values from a linear regression.
+
+```{r}
+# E
+
+Snakes <- dplyr::mutate(
+    Snakes, Residuals = snake_reg$residuals
+)
+
+Snakes %>%
+    ggplot(aes(x = Ln, y = Residuals)) +
+    geom_point() +
+    geom_hline(yintercept = 0) +
+    ggtitle("Scatterplot of Residuals vs Lengths")
+```
+
+What we see is a scattering of points above or below the x-axis. This scattering of points just shows how far away an actual data point was from the predicted value.
+
+```{r}
+# F
+
+sum(Snakes$Residuals)
+```
+
+We get a value here that is absurdly close to 0, it likely just isn't 0 due to rounding error. 
+
+***
+### Exercise 8
+
+a) According to the output of summary the residual standard error appears to be 39.34 with 13171 degrees of freedom.
+
+b) The value of $R^2$ seems to be 0.0427.
+
+c) According to the provided table this linear model would be a very poor fit for the data. 
+
+***
+\pagebreak
+### Exercise 9
+
+```{r}
+Sales <- c(174.4, 164.4, 244.2, 154.6, 181.6, 207.5, 152.8, 163.2,
+           145.4, 137.2, 241.9, 191.1, 232.0, 145.3, 161.1, 209.7,
+           146.4, 144.0, 232.6, 224.1, 166.5)
+Under16 <- c(68.5, 45.2, 91.3, 47.8, 46.9, 66.1, 49.5, 52.0, 48.9,
+             38.4, 87.9, 72.8, 88.4, 42.9, 52.5, 85.7, 41.3, 51.7,
+             89.6, 82.7, 52.3)
+Income <- c(16.7, 16.8, 18.2, 16.3, 17.3, 18.2, 15.9, 17.2, 16.6, 16.0,
+            18.3, 17.1, 17.4, 15.8, 17.8, 18.4, 16.5, 16.3, 18.1, 19.1,
+            16.0)
+portraitSales <- data.frame(Sales, Under16, Income)
+```
+
+```{r}
+# A
+
+sales_reg <- lm(Sales ~ Under16 + Income, data = portraitSales)
+
+sales_reg %>% summary()
+```
+
+The equation we get for this set of data is:
+
+\[\hat{Y} = -68.867 + 1.455x_1 + 9.366x_2\]
+
+b)
+
+```{r}
+-68.867 + (1.455 * 45) + (9.366 * 17)
+```
+
+```{r}
+predict(sales_reg, newdata = data.frame(Under16 = 45.0, Income = 17))
+```
+

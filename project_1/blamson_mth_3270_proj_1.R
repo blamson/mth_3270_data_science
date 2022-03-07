@@ -58,32 +58,40 @@ all_year %>%
     dif_mean_caclulator() %>%
     
     # Add in boolean difference column for coloring purposes ----
-    dplyr::mutate(pos = Difference >= 0) %>%
+    dplyr::mutate(positive = Difference >= 0) %>%
     
     # Generate plot, reordering columns by magnitude of difference value ----
     ggplot(
         aes(
             x = reorder(Demographic, -abs(Difference)),
             y = Difference, 
-            fill = pos
+            fill = positive
         )
     ) +
     
     # stat = "identity" used to force geom_bar to use values instead of count ----
     geom_bar(stat = "identity") +
     
+    # Change legend labels ----
+    scale_fill_discrete(labels = c("Under", "Over")) +
+    
     # Create horizontal line at x-axis for readability of visual ----
     geom_abline(slope=0, intercept=0, col="black", lty = 1) +
     
     # Generate labels ----
-    labs(title = "Differences Between College and Geographic Demographic Representation") +
+    labs(title = "Demographic Representation Differences Between Colleges and Populations",
+         subtitle = "Average differences for years 2009 - 2017",
+         caption = "Positive values show over-representation in higher ed. 
+                    Negative values show under-representation in higher ed.
+                    Data available at: community.amstat.org/dataexpo/home"
+         ) +
     ylab("Difference (%)") +
     xlab("Demographic") +
     
-    # Remove legend ----
-    guides(fill="none")
+    # Rename legend title ----
+    guides(fill = guide_legend(title = "Representation"))
 
-# -------------------------[ QUESTION 3]-----------------------------------------------------------
+# -------------------------[ QUESTION 3 ]----------------------------------------------------------
 
 # Grouping by institution level -------------------------------------------------------------------
 all_year %>%
@@ -103,16 +111,27 @@ all_year %>%
         )
     ) +
     
+    # Pick out manual fill colors
+    scale_fill_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
+    
     # stat = "identity" used to force geom_bar to use values instead of count ----
-    geom_bar(stat = "identity") +
+    geom_bar(stat = "identity", position = "dodge") +
     
     # Create horizontal line at x-axis for readability of visual ----
     geom_abline(slope=0, intercept=0, col="black", lty = 1) +
     
     # Generate labels ----
-    labs(title = "Differences Between College and Geographic Demographic Representation") +
+    labs(title = "Demographic Representation Differences Between Colleges and Populations",
+         subtitle = "Average differences for years 2009 - 2017",
+         caption = "Positive values show over-representation in higher ed. 
+                    Negative values show under-representation in higher ed.
+                    Data available at: community.amstat.org/dataexpo/home"
+         ) +
     ylab("Difference (%)") +
-    xlab("Demographic")
+    xlab("Demographic") +
+    
+    # Rename legend title ----
+    guides(fill = guide_legend(title = "Institution Level"))
 
 # Grouping by level of selection ------------------------------------------------------------------
 
@@ -120,9 +139,9 @@ all_year %>%
 all_year %>%
     dplyr::mutate(
         how_selective = as.factor(dplyr::case_when(
-            non_selective == 1 ~ 0,
-            selective == 1 ~ 1,
-            more_selective == 1 ~ 2
+            non_selective == 1 ~ "Non Selective",
+            selective == 1 ~ "Selective",
+            more_selective == 1 ~ "More Selective"
         ) )
     ) %>%
     
@@ -148,22 +167,34 @@ all_year %>%
     # 'position = dodge' allows for side-by-side plots based on factor. ----
     geom_bar(stat = "identity", position = "dodge") +
         
+    # Pick out manual fill colors
+    scale_fill_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
+    
     # Create horizontal line at x-axis for readability of visual ----
     geom_abline(slope=0, intercept=0, col="black", lty = 1) +
         
     # Generate labels ----
-    labs(title = "Differences Between College and Geographic Demographic Representation") +
-        ylab("Difference (%)") +
-        xlab("Demographic")
+    labs(title = "Demographic Representation Differences Between Colleges and Populations",
+         subtitle = "Average differences for years 2009 - 2017\nData grouped by selectivity ranking",
+         caption = "Positive values show over-representation in higher ed. 
+                    Negative values show under-representation in higher ed.
+                    Data available at: community.amstat.org/dataexpo/home") +
+    ylab("Difference (%)") +
+    xlab("Demographic") +
+    
+    # Rename legend title ----
+    guides(fill = guide_legend(title = "Selectivity\nRanking"))
 
 # Grouping by profit status -----------------------------------------------------------------------
 
 all_year %>%
+    
+    # Create profit_status factor based on public, private, for-profit status ----
     dplyr::mutate(
         profit_status = as.factor(dplyr::case_when(
-            public == 1 ~ "public",
-            private == 1 ~ "private",
-            forprofit == 1 ~ "for profit"
+            public == 1 ~ "Public",
+            private == 1 ~ "Private",
+            forprofit == 1 ~ "For Profit"
         ) )
     ) %>%
     
@@ -193,6 +224,93 @@ all_year %>%
     geom_abline(slope=0, intercept=0, col="black", lty = 1) +
         
     # Generate labels ----
-    labs(title = "Differences Between College and Geographic Demographic Representation") +
+    labs(title = "Demographic Representation Differences Between Colleges and Populations",
+         subtitle = "Average differences for years 2009 - 2017\nData grouped by type of funding",
+         caption = "Positive values show over-representation in higher ed. 
+                    Negative values show under-representation in higher ed.
+                    Data available at: community.amstat.org/dataexpo/home") +
         ylab("Difference (%)") +
-        xlab("Demographic")
+        xlab("Demographic") +
+    
+    # Rename legend title ----
+    guides(fill = guide_legend(title = "Funding Type"))
+
+
+# Group by profit status and plot difference over time --------------------------------------------
+
+all_year %>%
+    
+    dplyr::mutate(
+        profit_status = as.factor(dplyr::case_when(
+            public == 1 ~ "Public",
+            private == 1 ~ "Private",
+            forprofit == 1 ~ "For Profit"
+        ) )
+    ) %>%
+    
+    # Group by that new variable ----
+    dplyr::group_by(year, profit_status) %>%
+        
+    # Filter out NAs for how_selective ----
+    dplyr::filter(!is.na(profit_status)) %>%
+    
+    # Select only difference columns ----
+    dplyr::select(year, starts_with("dif")) %>%
+        
+    # apply the mean() function to all selected columns ----
+    dplyr::summarise(
+        dplyr::across(
+            .cols = dplyr::everything(),
+            .fns = mean, na.rm = TRUE
+        )
+    ) %>%
+        
+    # Rename columns ----
+    dplyr::rename(
+        White = "dif_white",
+        Hispanic = "dif_hispa",
+        Black = "dif_black",
+        Asian = "dif_asian",
+        AmericanIndian = "dif_amind",
+        PacificIslander = "dif_pacis",
+        Multiracial = "dif_twora"
+    ) %>%
+        
+    # pivot longer to make data easier to work with ----
+    tidyr::pivot_longer(
+        cols = White:Multiracial,
+        names_to = "Demographic",
+        values_to = "Difference"
+    ) %>%
+    
+    # Generate plot, reordering columns by magnitude of difference value ----
+    ggplot(
+        aes(
+            x = year,
+            y = Difference, 
+            color = Demographic
+        )
+    ) +
+    
+    # Generate line plot ----
+    geom_line(size = 1.05) +
+    
+    # Create multiple plots based on profit status ----
+    facet_wrap(vars(profit_status)) +
+        
+    # Create horizontal line at x-axis for readability of visual ----
+    geom_abline(slope=0, intercept=0, col="black", lty = 1) +
+        
+    # Generate labels ----
+    labs(
+        title = "Demographic Representation Differences Between Colleges and Populations",
+        subtitle = "Average differences over time from 2009 - 2017",
+        caption = "Positive values show over-representation in higher ed. 
+                   Negative values show under-representation in higher ed.
+                   Data available at: community.amstat.org/dataexpo/home"
+    ) +
+    ylab("Difference (%)") +
+    xlab("Year") +
+    
+    # Modify x tick marks ----
+    scale_x_continuous(breaks = c(seq(2010, 2016, by = 2)))

@@ -13,8 +13,16 @@ two_year <- readr::read_csv("project_1/HEsegDataviz_CollegeData_2-year_v5.csv")
 all_year <- dplyr::bind_rows(four_year, two_year)
 
 # -----------------------[ Helper Functions ]------------------------------------------------------
+# Helper functions to ensure I don't repeat myself more than necessary.
+# Note: Due to overconfidence and inexperience I had to largely scale back these functions.
+#       This, unfortunately means I had to repeat myself far more than necessary.
+#       Handling this elegantly became less of a priority than getting the project done! 
 
-# Calculates average differences for all demographics ---------------------------------------------
+# dif_mean_calculator() Calculates average differences for all demographics -----------------------
+# This function takes our data set, selects out the difference columns
+# and calculates sample means for each of the columns. This data
+# is then converted to tidy format using pivot_longer
+
 dif_mean_caclulator <- function(df) {
     df %>%
         
@@ -49,17 +57,32 @@ dif_mean_caclulator <- function(df) {
 }
 
 
+# create_kable() creates a table using KableExtra ----------------------------------------
+# This function converts tidy format data to wide format and generates a simple table ----
+create_kable <- function(df, title) {
+    df %>%
+        tidyr::pivot_wider(
+            names_from = Demographic,
+            values_from = Difference
+        ) %>%
+        kableExtra::kbl(caption = title) %>%
+        kableExtra::kable_classic(full_width = F)
+}
+
+
 # -------------------------[ QUESTION 1 / 2 ]------------------------------------------------------
 
 # Generate general difference plot ----------------------------------------------------------------
-all_year %>%
+general_df <- all_year %>%
     
     # Utilize our mean helper function ----
     dif_mean_caclulator() %>%
     
     # Add in boolean difference column for coloring purposes ----
-    dplyr::mutate(positive = Difference >= 0) %>%
+    dplyr::mutate(positive = Difference >= 0)
     
+general_df %>%
+
     # Generate plot, reordering columns by magnitude of difference value ----
     ggplot(
         aes(
@@ -94,13 +117,15 @@ all_year %>%
 # -------------------------[ QUESTION 3 ]----------------------------------------------------------
 
 # Grouping by institution level -------------------------------------------------------------------
-all_year %>%
+slevel_df <- all_year %>%
     
     # Group the data by institution level ----
     dplyr::group_by(slevel) %>%
     
     # Calculate average differences ----
-    dif_mean_caclulator() %>%
+    dif_mean_caclulator()
+
+slevel_df %>%
         
     # Generate plot, reordering columns by magnitude of difference value ----
     ggplot(
@@ -136,7 +161,7 @@ all_year %>%
 # Grouping by level of selection ------------------------------------------------------------------
 
 # Create a new variable based on level of selection ----
-all_year %>%
+selective_df <- all_year %>%
     dplyr::mutate(
         how_selective = as.factor(dplyr::case_when(
             non_selective == 1 ~ "Non Selective",
@@ -152,8 +177,10 @@ all_year %>%
     dplyr::filter(!is.na(how_selective)) %>%
     
     # Calculate average differences ----
-    dif_mean_caclulator() %>%
+    dif_mean_caclulator()
     
+selective_df %>%
+
     # Generate plot, reordering columns by magnitude of difference value ----
     ggplot(
         aes(
@@ -187,7 +214,7 @@ all_year %>%
 
 # Grouping by profit status -----------------------------------------------------------------------
 
-all_year %>%
+profit_df <- all_year %>%
     
     # Create profit_status factor based on public, private, for-profit status ----
     dplyr::mutate(
@@ -205,8 +232,10 @@ all_year %>%
     dplyr::filter(!is.na(profit_status)) %>%
         
     # Calculate average differences ----
-    dif_mean_caclulator() %>%
+    dif_mean_caclulator()
         
+profit_df %>%
+
     # Generate plot, reordering columns by magnitude of difference value ----
     ggplot(
         aes(
@@ -314,3 +343,19 @@ all_year %>%
     
     # Modify x tick marks ----
     scale_x_continuous(breaks = c(seq(2010, 2016, by = 2)))
+
+# ----------------------------------------[ Tables ]-----------------------------------------------
+
+# Table for profit calculations ----
+profit_table <- profit_df %>%
+    create_kable(title = "Representation Differences Grouped by School Profit Status")
+
+general_table <- general_df %>%
+    dplyr::select(Demographic, Difference) %>%
+    create_kable(title = "Overall Representation Differences by Demographic")
+
+slevel_table <- slevel_df %>%
+    create_kable(title = "Representation Differences by Institution Level")
+
+selective_table <- selective_df %>%
+    create_kable(title = "Representation Differences by Selectivity Ranking")

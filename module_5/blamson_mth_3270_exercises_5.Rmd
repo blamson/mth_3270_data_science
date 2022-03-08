@@ -434,13 +434,156 @@ The equation we get for this set of data is:
 
 \[\hat{Y} = -68.867 + 1.455x_1 + 9.366x_2\]
 
-b)
-
 ```{r}
+# B1
+
 -68.867 + (1.455 * 45) + (9.366 * 17)
 ```
 
 ```{r}
+# B2
+
 predict(sales_reg, newdata = data.frame(Under16 = 45.0, Income = 17))
 ```
 
+c)
+
+Using the equation of the plane, we can surmise that sales increases by approximately **1.455** per 1.0 thousand people under 16.
+
+d)
+
+Using the same equation, we can say sales increase by approximately **9.366**.
+
+***
+\pagebreak
+### Exercise 10
+
+```{r}
+cdi <- read.table("CDI.txt", header = TRUE)
+```
+
+
+```{r}
+# A
+
+cdi %>%
+    dplyr::select(-c(ID, County, State)) %>%
+    pairs()
+```
+
+```{r, fig}
+# B
+
+cdi %>%
+    dplyr::select(-c(ID, County, State)) %>%
+    cor() %>%
+    kableExtra::kbl() %>%
+    kableExtra::kable_classic() %>%
+    kable_styling(latex_options=c("scale_down", "hold_position"))
+```
+
+```{r}
+# C
+
+act_phys_reg <- lm(nActPhys ~ TotPop + LandArea + TotInc, data = cdi)
+
+act_phys_reg %>% summary()
+```
+The equation of this line is:
+
+\[Y = (-1.332 * 10) + (8.336 \cdot 10^{-4}X_1) + (-6.552 \cdot 10^{-2}X_2) + (9.413 \cdot 10^{-2})\]
+
+```{r}
+# D1
+a <- 8.336 * 10^(-4) * 400000
+b <- -6.552 * 10^(-2) * 1000
+c <- 9.413 * 10^(-2) * 8000
+
+-1.332 * 10 + a + b + c
+
+```
+
+```{r}
+# D2
+
+predict(
+    act_phys_reg, 
+    newdata = data.frame(
+        TotPop = 400000,
+        LandArea = 1000,
+        TotInc = 8000
+    )
+)
+```
+e)
+
+The number of active physicians increases by $8.336 \cdot 10^{-4}$ for every additional personal added to the population.
+
+f)
+
+The number of active physicians increases by $9.413 \cdot 10^{-2}$ for every additional 1.0 million dollars in total personal income. 
+
+***
+\pagebreak
+### Exercise 11
+
+```{r}
+cdi <- cdi %>%
+    dplyr::mutate(PopDens = TotPop / LandArea)
+```
+
+```{r}
+act_phys_dens_reg <- lm(nActPhys ~ PopDens + PctPop65 + PerCapInc, data = cdi)
+```
+
+```{r}
+act_phys_dens_reg %>% summary()
+```
+
+The equation of this plane is:
+\[Y = -1087.8142 + 0.2873X_1 - 7.9640X_2 + 0.1033X_3\]
+
+```{r}
+# B1
+
+- 1087.8142 + (0.2873*900) - (7.9640*15) + (0.1033*20000)
+```
+
+```{r}
+# B2
+
+predict(
+    act_phys_dens_reg, 
+    newdata = data.frame(
+        PopDens = 900,
+        PctPop65 = 15,
+        PerCapInc = 20000
+    )
+)
+```
+
+***
+\pagebreak
+### Exercise 12
+
+a) 
+
+The residual standard error of the model using total population has a residual standard error of **560.4 on 436 degrees of freedom**. The residual standard error of the other model has an RSE of **1589 on 436 degrees of freedom**. This shows that the first model we used was probably the better model to use.
+
+b) 
+
+Total Population Model:
+\[R^2 = .9026\]
+
+Population Density Model:
+\[R^2 = .2173\]
+
+This mirrors our results from part a, this also shows the total population model as being a better predictor for the number of active physicians.
+
+c)
+
+Total population is a better predictor for the number of active physicians. Population density does not seem to be a good predictor of this information at all.
+
+***
+\pagebreak
+## 9.7: Logistic Regression: Dichotomous (0 or 1) Response Variable.

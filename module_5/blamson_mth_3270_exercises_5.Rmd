@@ -5,6 +5,8 @@ date: "2/28/2022"
 output: 
     pdf_document:
         dev: png
+        includes:
+            in_header: "preamble.tex"
 ---
 
 ```{r setup, include=FALSE}
@@ -446,13 +448,9 @@ The equation we get for this set of data is:
 predict(sales_reg, newdata = data.frame(Under16 = 45.0, Income = 17))
 ```
 
-c)
+c) Using the equation of the plane, we can surmise that sales increases by approximately **1.455** per 1.0 thousand people under 16.
 
-Using the equation of the plane, we can surmise that sales increases by approximately **1.455** per 1.0 thousand people under 16.
-
-d)
-
-Using the same equation, we can say sales increase by approximately **9.366**.
+d) Using the same equation, we can say sales increase by approximately **9.366**.
 
 ***
 \pagebreak
@@ -566,9 +564,7 @@ predict(
 \pagebreak
 ### Exercise 12
 
-a) 
-
-The residual standard error of the model using total population has a residual standard error of **560.4 on 436 degrees of freedom**. The residual standard error of the other model has an RSE of **1589 on 436 degrees of freedom**. This shows that the first model we used was probably the better model to use.
+a) The residual standard error of the model using total population has a residual standard error of **560.4 on 436 degrees of freedom**. The residual standard error of the other model has an RSE of **1589 on 436 degrees of freedom**. This shows that the first model we used was probably the better model to use.
 
 b) 
 
@@ -580,10 +576,49 @@ Population Density Model:
 
 This mirrors our results from part a, this also shows the total population model as being a better predictor for the number of active physicians.
 
-c)
-
-Total population is a better predictor for the number of active physicians. Population density does not seem to be a good predictor of this information at all.
+c) Total population is a better predictor for the number of active physicians. Population density does not seem to be a good predictor of this information at all.
 
 ***
 \pagebreak
 ## 9.7: Logistic Regression: Dichotomous (0 or 1) Response Variable.
+### Exercise 13
+
+```{r}
+dues <- read.table("DUES.txt", header = TRUE)
+```
+
+```{r}
+my.logreg <- glm(NotRenew ~ DuesIncr, family = "binomial", data = dues)
+```
+
+```{r}
+# A1
+
+num <- exp(1)^(-15.42 + (0.39*45))
+den <- 1 + exp(1)^(-15.42 + (0.39*45))
+
+num / den
+```
+
+```{r}
+# A2
+newDues <- data.frame(DuesIncr = 45)
+predict(my.logreg, newDues, type = "response")
+```
+
+```{r}
+# B1 
+
+num <- exp(1)^(-15.42 + (0.39*35))
+den <- 1 + exp(1)^(-15.42 + (0.39*35))
+
+num / den
+```
+
+```{r}
+# B2
+
+newDues <- data.frame(DuesIncr = 35)
+predict(my.logreg, newDues, type = "response")
+```
+

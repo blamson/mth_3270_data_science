@@ -1,7 +1,7 @@
 ---
 title: "Midterm Project 1"
 author: "Brady Lamson"
-date: "3/4/2022"
+date: "March 14, 2022"
 output: 
     pdf_document:
         includes:
@@ -9,156 +9,27 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, out.width="100%", echo = FALSE)
 library(dplyr)
 library(ggplot2)
 library(kableExtra)
 ```
 
-```{r, message=FALSE}
-# Read in data
 
-dictionary <- readxl::read_xlsx("HEsegDataviz_Dictionary.xlsx")
-four_year <- readr::read_csv("HEsegDataviz_CollegeData_4-year_v5.csv")
-two_year <- readr::read_csv("HEsegDataviz_CollegeData_2-year_v5.csv")
-```
+# Data Work
 
-```{r, echo=FALSE}
-# Diff name data frame for personal reference 
-diff_names <- four_year %>%
-    select(starts_with("dif")) %>%
-    colnames()
-```
+To accomplish this project a large amount of data wrangling was necessary. Thankfully this wrangling was *largely* consistent across visualizations, with some slight differences depending on the specific analysis being done. The first step I took was combining the two provided csv files. Since the four year and two year files shared the exact same format it was trivial to combine them using **dplyr::bind_rows()** and saved me a great deal of trouble in the long run. 
+
+Next I began creating a couple simple helper functions, one to calculate average differences for a data frame and the other to create a simple table utilizing the kableExtra package. The first of these two is used in nearly every single visual made and is the meat of the data wrangling being done. The function selects out only the columns starting with *"dif"*, computes a summarized mean for every one of those columns and then renames all of them to be a more presentable format for visualizations. Finally it converts this new data frame to tidy format using **tidyr::pivot_longer()** to allow the ggplot2 package to work its magic. Any other data wrangling was largely smaller in scale, typically involving **dplyr::group_by()** to prep the data frame before passing it into the difference calculator function I wrote. 
+
+***
+\pagebreak
 
 # Research Question 1
 Overall, to what degree do college racial and ethnic compositions differ from the racial and
 ethnic compositions of the institutions’ geographic ”markets”?
 
-To answer this question I decided to calculate these differences separately for four and two year institutions. For this question the information we need is readily available from the data set itself so we can easily select out the difference columns specifically and get an average. 
-
-## Code
-
 ```{r}
-# Calculate average differences for each demographic column
-# Then create a summarised data frame of those averages
-
-# Four year average differences -----
-average_four_year_diffs <- four_year %>%
-    select(starts_with("dif")) %>%
-    summarise(
-        across(
-            .cols = everything(),
-            .fns = mean, na.rm = TRUE
-        )
-    )
-
-# Two year average differences -----
-average_two_year_diffs <- two_year %>%
-    select(starts_with("dif")) %>%
-    summarise(
-        across(
-            .cols = everything(),
-            .fns = mean, na.rm = TRUE
-        )
-    )
-```
-
-```{r}
-# Combine the two difference data frames together
-# Add a new column for institution type
-
-average_diff_df <- dplyr::bind_rows(
-    average_four_year_diffs,
-    average_two_year_diffs
-) %>%
-    dplyr::mutate(
-        institution_type = c("Four Year", "Two Year")
-    ) %>%
-    dplyr::relocate(
-        institution_type
-    )
-```
-
-```{r}
-# Turn data frame into a clean HTML table using kableExtra. 
-q1_tbl <- average_diff_df %>%    
-    kableExtra::kbl(
-        booktabs = T,
-        caption = "College versus Geographic Demographic Differences (Percent)",
-        col.names = c(
-            "Institution Type", "White", "Hispanic", 
-            "Black", "Asian", "American Indian", 
-            "Pacific Islander", "Multiracial"
-        )
-    ) %>%
-    kableExtra::kable_styling(latex_options = c("scale_down", "hold_position"))
-```
-
-```{r}
-# Plot averages of four-year and two-year institutions
-
-# year-four difference plot ---------------
-q1_y4_plot <- average_four_year_diffs %>%
-    # pivot longer to make data easier to work with
-    tidyr::pivot_longer(
-        cols = dplyr::starts_with("dif"),
-        names_to = "Demographic",
-        values_to = "Difference"
-    ) %>%
-    # Add in boolean difference column for coloring purposes
-    dplyr::mutate(pos = Difference >= 0) %>%
-    # Generate plot, reordering columns by magnitude of difference value
-    ggplot(
-        aes(x = reorder(Demographic, -abs(Difference)), y = Difference, fill = pos)
-    ) +
-    geom_bar(stat = "identity") +
-    # Create horizontal line at x-axis for readability of visual
-    geom_abline(slope=0, intercept=0, col="black", lty = 2) +
-    labs(title = "Differences Between College and Geographic Demographic Representation", 
-         subtitle = "Four-Year Institutions") +
-    ylab("Difference (%)") +
-    xlab("Demographic") +
-    scale_x_discrete(labels = c("Hispanic", "White", "Multiracial", "Pacif. Isl.",
-                                "Amer. Indian", "Asian", "Black")
-                     ) +
-    ylim(c(-6.25,6.25))
-
-# year-two difference plot ---------------------
-q1_y2_plot <- average_two_year_diffs %>%
-    # pivot longer to make data easier to work with
-    tidyr::pivot_longer(
-        cols = dplyr::starts_with("dif"),
-        names_to = "Demographic",
-        values_to = "Difference"
-    ) %>%
-    # Add in boolean difference column for coloring purposes
-    dplyr::mutate(pos = Difference >= 0) %>%
-    # Generate plot, reordering columns by magnitude of difference value
-    ggplot(
-        aes(x = reorder(Demographic, -abs(Difference)), y = Difference, fill = pos)
-    ) +
-    geom_bar(stat = "identity") +
-    # Create horizontal line at x-axis for readability of visual
-    geom_abline(slope=0, intercept=0, col="black", lty = 2) +
-    labs(title = "Differences Between College* and Geographic Demographic Representation", 
-         subtitle = "*Two-Year Institutions") +
-    ylab("Difference (%)") +
-    xlab("Demographic") +
-    ylim(c(-8.5,8.5))
-```
-
-```{r}
-
-    # scale_x_discrete(labels = c("Hispanic", "White", "Multiracial", "Pacif. Isl.",
-    #                             "Amer. Indian", "Asian", "Black")
-    #                  ) +
-```
-
-# Output
-
-```{r, echo=FALSE}
-q1_tbl
-q1_y4_plot
-q1_y2_plot
+knitr::include_graphics(path = "plots/gen_diff_bar.png")
 ```
 

@@ -5,9 +5,9 @@ library(kableExtra)
 
 
 # Read in / bind data -----------------------------------------------------------------------------
-dictionary <- readxl::read_xlsx("project_1/HEsegDataviz_Dictionary.xlsx")
-four_year <- readr::read_csv("project_1/HEsegDataviz_CollegeData_4-year_v5.csv")
-two_year <- readr::read_csv("project_1/HEsegDataviz_CollegeData_2-year_v5.csv")
+dictionary <- readxl::read_xlsx("project_1/data/HEsegDataviz_Dictionary.xlsx")
+four_year <- readr::read_csv("project_1/data/HEsegDataviz_CollegeData_4-year_v5.csv")
+two_year <- readr::read_csv("project_1/data/HEsegDataviz_CollegeData_2-year_v5.csv")
 
 # Combine two and four year data sets by row ----
 all_year <- dplyr::bind_rows(four_year, two_year)
@@ -20,8 +20,8 @@ all_year <- dplyr::bind_rows(four_year, two_year)
 
 # dif_mean_calculator() Calculates average differences for all demographics -----------------------
 # This function takes our data set, selects out the difference columns
-# and calculates sample means for each of the columns. This data
-# is then converted to tidy format using pivot_longer
+# and calculates sample means for each of the columns. 
+# This data is then converted to tidy format using pivot_longer
 
 dif_mean_caclulator <- function(df) {
     df %>%
@@ -104,15 +104,16 @@ general_df %>%
     # Generate labels ----
     labs(title = "Demographic Representation Differences Between Colleges and Populations",
          subtitle = "Average differences for years 2009 - 2017",
-         caption = "Positive values show over-representation in higher ed. 
-                    Negative values show under-representation in higher ed.
-                    Data available at: community.amstat.org/dataexpo/home"
+         caption = "Data available at: community.amstat.org/dataexpo/home"
          ) +
     ylab("Difference (%)") +
     xlab("Demographic") +
     
     # Rename legend title ----
-    guides(fill = guide_legend(title = "Representation"))
+    guides(fill = guide_legend(title = "Representation")) +
+    
+    # Change font size ----
+    theme(text = element_text(size = 15))
 
 # -------------------------[ QUESTION 3 ]----------------------------------------------------------
 
@@ -156,7 +157,10 @@ slevel_df %>%
     xlab("Demographic") +
     
     # Rename legend title ----
-    guides(fill = guide_legend(title = "Institution Level"))
+    guides(fill = guide_legend(title = "Institution Level")) +
+    
+    # Change font size ----
+    theme(text = element_text(size = 15))
 
 # Grouping by level of selection ------------------------------------------------------------------
 
@@ -210,7 +214,10 @@ selective_df %>%
     xlab("Demographic") +
     
     # Rename legend title ----
-    guides(fill = guide_legend(title = "Selectivity\nRanking"))
+    guides(fill = guide_legend(title = "Selectivity\nRanking")) +
+    
+    # Change font size ----
+    theme(text = element_text(size = 15))
 
 # Grouping by profit status -----------------------------------------------------------------------
 
@@ -262,7 +269,10 @@ profit_df %>%
         xlab("Demographic") +
     
     # Rename legend title ----
-    guides(fill = guide_legend(title = "Funding Type"))
+    guides(fill = guide_legend(title = "Funding Type")) +
+    
+    # Change font size ----
+    theme(text = element_text(size = 15))
 
 
 # Group by profit status and plot difference over time --------------------------------------------
@@ -342,7 +352,10 @@ all_year %>%
     xlab("Year") +
     
     # Modify x tick marks ----
-    scale_x_continuous(breaks = c(seq(2010, 2016, by = 2)))
+    scale_x_continuous(breaks = c(seq(2010, 2016, by = 2))) +
+    
+    # Change font size ----
+    theme(text = element_text(size = 15))
 
 # ----------------------------------------[ Tables ]-----------------------------------------------
 

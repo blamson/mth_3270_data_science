@@ -204,6 +204,19 @@ I definitely prefer the pipe format, the other format becomes unreadable very qu
 \pagebreak
 ## Chapter 6 Problem 3
 
+```{r}
+x1 <- c("1900.45", "$1900.45", "1,900.45", "nearly $2000")
+x2 <- as.factor(x1)
+
+readr::parse_number(x1)
+#readr::parse_number(x2)
+
+as.numeric(x1)
+as.numeric(x2)
+```
+
+The first command returns the expected numbers you'd be looking for. The second command throws an error though. Looking in the documentation for readr::parse_number() clears up why. parse_number() takes in a character vector, which a vector of factors is not. We see the opposite problem with as.numeric(). With that one we get a reasonable 1900.45 value followed by 3 NA's. This is because of the not "numeric" parts of the string confusing it, like the commas and dollar signs. Whereas x2 works fine because factors are just integers under the hood. 
+
 ***
 \pagebreak
 ## Chapter 6 Problem 5
@@ -218,9 +231,43 @@ my.data <- data.frame(grp = rep(c("A", "B"), each = 2),
 ```
 
 ```{r}
-my.data %>%
-    tidyr::pivot_longer(cols = c(meanL, meanR, sdR))
-    tidyr::pivot_wider(names_from = sex,
-                       values_from = c(meanL, meanR, sdR))
+# my.data %>%
+#     tidyr::pivot_longer(cols = c(meanL, sdL, meanR, sdR), values_to = 'sex') 
+# 
+# 
+# tidyr::pivot_wider(names_from = grp,
+#                        values_from = sex)
+```
+
+***
+\pagebreak
+## Chapter 6 Problem 7
+
+```{r}
+ds1 <- data.frame(id = rep(1:3, times = 2),
+                  group = rep(c("T", "C"), each = 3),
+                  vals = c(4, 6, 8, 5, 6, 10))
+
+ds1
+```
+
+The big problem with the below approach is that it assumes a consistent ordering for id. If, for instance, the ordering for ID got messed up somehow and was instead "3, 2, 1" for whatever reason this code would provide inaccurate results. This would also break down is a value was to be removed for whatever reason.  It is entirely dependent on ordering being consistent which isn't something you can rely on with larger messier data sets. 
+
+```{r}
+Treat <- filter(ds1, group == "T")
+Control <- filter(ds1, group == "C")
+all <- mutate(Treat, diff = Treat$vals - Control$vals)
+all
+```
+
+```{r}
+ds1 %>%
+    tidyr::pivot_wider(
+        names_from = group,
+        values_from = vals
+    ) %>%
+    dplyr::mutate(
+        diff = T - C
+    )
 ```
 

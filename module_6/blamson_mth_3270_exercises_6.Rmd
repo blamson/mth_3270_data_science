@@ -1,0 +1,70 @@
+---
+title: "Exercises 6"
+author: "Brady Lamson"
+date: "`r Sys.Date()`"
+output: 
+    pdf_document:
+            includes:
+                in_header: "preamble.tex"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(rpart)
+```
+
+# 11: Supervised Learning
+## 11.1 Classifiers
+### Exercise 1
+
+Based on the decision tree I would make the following predictions:
+
+- A 9-inch, 10-pound pet would likely be a **cat** and be pretty confident. 
+
+- A 14-inch, 21-pound pet would likely be a **dog** and be very confident. 
+
+***
+### Exercise 2
+
+```{r}
+type <- c("dog", "dog", "cat", "dog", "cat", "dog", "cat", "dog", "cat",
+          "dog", "cat", "dog", "dog", "cat", "dog", "cat", "dog", "cat", "dog")
+
+wt <- c(8, 17, 8, 18, 7, 22, 6, 16, 7, 20, 10, 15, 14, 11, 13, 13, 15, 17, 10)
+ht <- c(7.5, 10, 8, 15, 7, 15, 7, 13, 11, 16, 7, 10.5, 9, 9.5, 9, 8, 9, 8, 12)
+
+pets <- data.frame(Type = type, Ht = ht, Wt = wt)
+
+my.tree <- rpart(
+    Type ~ Wt + Ht, data = pets,
+    control = rpart.control(minsplit = 7)
+)
+
+newPets <- data.frame(Ht = c(9, 14), Wt = c(10, 21))
+
+predict(my.tree, newdata = newPets, type = "class")
+```
+
+First pet is predicted to be a cat and the second pet is predicted to be a dog. This prediction makes the same predictions I made in exercise 1. 
+
+***
+\pagebreak
+### Exercise 3
+
+```{r}
+my.tree <- rpart(Species ~ Petal.Length + Petal.Width, data = iris)
+my.tree
+```
+
+a) This tree has 3 different terminal nodes.
+
+```{r}
+predSpecies <- predict(my.tree, type = "class")
+species <- data.frame(Actual = iris$Species, Predicted = predSpecies)
+
+confusion <- table(species)
+confusion
+```
+
+b) The trees correct classification rate is **96%** and the mis-classification rate is, by extension, **4%**.

@@ -231,12 +231,11 @@ my.data <- data.frame(grp = rep(c("A", "B"), each = 2),
 ```
 
 ```{r}
-# my.data %>%
-#     tidyr::pivot_longer(cols = c(meanL, sdL, meanR, sdR), values_to = 'sex') 
-# 
-# 
-# tidyr::pivot_wider(names_from = grp,
-#                        values_from = sex)
+my.data %>%
+    tidyr::pivot_wider(
+        names_from = sex,
+        values_from = c(meanL, meanR, sdL, sdR)
+    )
 ```
 
 ***
@@ -270,4 +269,3 @@ ds1 %>%
         diff = T - C
     )
 ```
-

@@ -25,11 +25,82 @@ Next I began creating a couple simple helper functions, one to calculate average
 ***
 \pagebreak
 
-# Research Question 1
-Overall, to what degree do college racial and ethnic compositions differ from the racial and
-ethnic compositions of the institutions’ geographic ”markets”?
+# Plots
 
+## Figure 1
 ```{r}
 knitr::include_graphics(path = "plots/gen_diff_bar.png")
 ```
 
+## Figure 2
+```{r}
+knitr::include_graphics(path = "plots/inst_level_diff.png")
+```
+
+## Figure 3
+```{r}
+knitr::include_graphics(path = "plots/profit_diff_plot.png")
+```
+
+## Figure 4
+```{r}
+knitr::include_graphics(path = "plots/select_diff_plot.png")
+```
+
+## Figure 5
+```{r}
+knitr::include_graphics(path = "plots/demo_diff_time_plot.png")
+```
+
+***
+\pagebreak
+
+# Tables
+
+## Figure 6
+
+```{r}
+knitr::include_graphics(path = "tables/general_table.png")
+```
+
+## Figure 7
+```{r}
+knitr::include_graphics(path = "tables/profit_table.png")
+```
+
+## Figure 8
+```{r}
+knitr::include_graphics(path = "tables/inst_level_table.png")
+```
+
+## Figure 9
+```{r}
+knitr::include_graphics(path = "tables/selectivity_table.png")
+```
+
+***
+\pagebreak
+
+# Research Questions
+
+**Q1:** Overall, to what degree do college racial and ethnic compositions differ from the racial and ethnic compositions of the institutions’ geographic "markets"?
+
+**Figure 1** and **Figure 6** both do a good job showcasing general differences between college demographics versus geographic representations. At the most general we see that these representations are fairly accurate, with the worst cases being over or under representation by a few percent. 
+
+***
+
+**Q2:** For which specific racial or ethnic groups are the discrepancies between their representations in colleges and their representations in the "markets” largest?
+
+Across every single figure in the report you will see the same three groups appear in various orders. **Black** **White** and **Hispanic** are, across the board, the groups with the largest representation issues. In general, that is, without grouping by the type of school, the **black** population is over represented by around **3.1%** and the **Hispanic** and **white** communities are under represented by around **2.8%** (Figure 6). It is of note that, despite groups such as multi-racial appearing well represented, that this data is still subject to any bias that stems from its collection. Multiracial populations have historically been under-counted, so it is difficult to draw conclusions about them from this data alone. Similar critiques may also apply to any of the other demographics concerned and should be taken into consideration. 
+
+***
+
+**Q3:** If colleges are grouped by institution level, degree of selectivity, and/or public/private/for profit status, do the discrepancies between college and "market” racial and ethnic compositions vary across groups? In other words are the discrepancies larger for some types of colleges than others? If so, for which types of colleges are the discrepancies largest? 
+
+This question is where I find the meat of the analysis to be. As mentioned in my answer to **Q2**, the same three groups appear at the top of every visualization. **Black**, **white**, and **Hispanic** populations are consistently mis-represented, but the specific type and degree of mis-representation varies a **ton** between types of school. 
+
+Let us first examine the representation discrepancies for one of those three previously mentioned groups. Looking at figure 2 and figure 8 is where we immediately see that the general answer to **Q1** isn't showing the full picture. Here we see that for two-year institutions, the white population is severely under-represented by around **8%**. This isn't the only type of school where this under-representation happens. Jumping over to figure 3 and figure 7 shows an under-representation of over **13%** for the white population but it also shows an over-representation at private schools by over **5%** and figures 9 and shows an enormous over-representation of over **12%** for schools with the highest selectivity ranking. 
+
+We see this type of flip-flopping with the representation of the black population as well. A sizable over-representation at 2-year institutions and for profit schools but a substantial under-representation at schools with the highest selectivity ranking. Strangely enough, the Hispanic population does not experience such flip flopping. Across every type of school this group is either represented fairly or is severly under-represented. This is very apparent when looking at selectivity ranking, where Hispanic individuals are under-represented across every type of that ranking, with around a **9.7%** under-representation at schools with the highest selectivity ranking. 
+
+Overall, the types of schools that see the largest degree of mis-representation are schools with the highest selectivity ranking and for-profit institutions. 2-year institutions come close but don't quite experience this to the same degree as the others. We can also see that public schools tend to be the most representative of their geographic populations with the most extreme mis-representation being approximately **-2.48%** for the white population. 

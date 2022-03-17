@@ -5,6 +5,7 @@ library(kableExtra)
 
 
 # Read in / bind data -----------------------------------------------------------------------------
+# Note: File paths are for my personal machine and will need to be modified for other devices ----
 dictionary <- readxl::read_xlsx("project_1/data/HEsegDataviz_Dictionary.xlsx")
 four_year <- readr::read_csv("project_1/data/HEsegDataviz_CollegeData_4-year_v5.csv")
 two_year <- readr::read_csv("project_1/data/HEsegDataviz_CollegeData_2-year_v5.csv")
@@ -16,7 +17,6 @@ all_year <- dplyr::bind_rows(four_year, two_year)
 # Helper functions to ensure I don't repeat myself more than necessary.
 # Note: Due to overconfidence and inexperience I had to largely scale back these functions.
 #       This, unfortunately means I had to repeat myself far more than necessary.
-#       Handling this elegantly became less of a priority than getting the project done! 
 
 # dif_mean_calculator() Calculates average differences for all demographics -----------------------
 # This function takes our data set, selects out the difference columns
@@ -361,14 +361,21 @@ all_year %>%
 
 # Table for profit calculations ----
 profit_table <- profit_df %>%
-    create_kable(title = "Representation Differences Grouped by School Profit Status")
+    create_kable(title = "Representation Differences (%) Grouped by School Profit Status") %>%
+    kableExtra::save_kable(file = "profit_table.png", zoom = 3)
 
+# General difference table ----
 general_table <- general_df %>%
     dplyr::select(Demographic, Difference) %>%
-    create_kable(title = "Overall Representation Differences by Demographic")
+    create_kable(title = "Overall Representation Differences (%) by Demographic") %>%
+    kableExtra::save_kable(file = "general_table.png", zoom = 3)
 
+# Institution level table ----
 slevel_table <- slevel_df %>%
-    create_kable(title = "Representation Differences by Institution Level")
+    create_kable(title = "Representation Differences (%) by Institution Level") %>%
+    kableExtra::save_kable(file = "inst_level_table.png", zoom = 3)
 
+# Selectivity ranking table ----
 selective_table <- selective_df %>%
-    create_kable(title = "Representation Differences by Selectivity Ranking")
+    create_kable(title = "Representation Differences (%) by Selectivity Ranking") %>%
+    kableExtra::save_kable(file = "selectivity_table.png", zoom = 3)

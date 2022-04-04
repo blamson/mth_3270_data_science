@@ -2,12 +2,17 @@
 title: "Unsupervised Learning"
 author: "Brady Lamson"
 date: "`r Sys.Date()`"
-output: pdf_document
+output: 
+    pdf_document:
+        dev: png
+        includes:
+            in_header: "preamble.tex"
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(dplyr)
+library(ggplot2)
 ```
 
 ### Exercise 1
@@ -131,3 +136,84 @@ pairs(wine,
 ```
 
 Yes, the clusters here do seem to be corresponding to wine types. 
+
+***
+\pagebreak
+### Exercise 6
+
+```{r}
+wine %>%
+    summarise(across(
+        everything(), list(mean = mean)
+    ))
+```
+
+```{r}
+wine_cntr <-
+    wine %>%
+    scale(center = TRUE, scale = FALSE) %>%
+    as.data.frame()
+
+my_pca <-
+    svd(wine_cntr)
+```
+
+```{r}
+ggplot(data = data.frame(d = my_pca$d, j = 1:13),
+       mapping = aes(x = j, y = d)) +
+    geom_point() +
+    geom_line() +
+    ggtitle("Plot of d vs j")
+```
+
+```{r}
+my_pca$d
+```
+
+What we can see from the vector is that most of the information is kept in the first 4 $V_j$'s. What we need to decide here is what our cutoff is, what do we define as *"close to zero"*. In this case I would abandon all of the $V_j$'s less than 5, keeping the first 8. 
+
+```{r}
+wine_cntr <-
+    wine %>%
+    scale(center = TRUE, scale = TRUE) %>%
+    as.data.frame()
+
+my_pca <-
+    svd(wine_cntr)
+
+ggplot(data = data.frame(d = my_pca$d, j = 1:13),
+       mapping = aes(x = j, y = d)) +
+    geom_point() +
+    geom_line() +
+    ggtitle("Plot of d vs j")
+
+my_pca$d
+```
+
+I'm still not 100% sure here, but I feel like a lot of the $V_j$'s here are still quite valuable. If any, I would only abandon the bottom 2. 
+
+***
+\pagebreak
+### Exercise 7
+
+```{r}
+virginica <-
+    iris %>%
+    filter(Species == "virginica") %>%
+    select(-Species)
+
+vir_cntr <-
+    virginica %>%
+    scale(center = TRUE, scale = FALSE) %>%
+    as.data.frame()
+
+my_pca <- 
+    svd(vir_cntr)
+
+#-----[my_pca$v]------
+my_pca$v
+#-----[my_pca$d]------
+my_pca$d
+```
+
+$V_1$ would be reflecting length and $V_2$ width. I base this guess off of the derived variables. In $V_1$, the coefficients that would be tied to both length variables are high, in $V_2$, the higher coefficients are on what would be the width variables.  

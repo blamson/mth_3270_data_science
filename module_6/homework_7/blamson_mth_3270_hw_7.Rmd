@@ -1,0 +1,123 @@
+---
+title: "Homework 7"
+author: "Brady Lamson"
+date: "`r Sys.Date()`"
+output: 
+  pdf_document: 
+    latex_engine: xelatex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(tidymodels)
+```
+
+# Appendix E
+## Problem 5
+
+```{r}
+helprtc <- 
+    mosaicData::HELPrct %>%
+    mutate(
+        homeless01 = 
+            case_when(
+                homeless == "housed" ~ 0,
+                homeless == "homeless" ~ 1
+            )
+    ) %>% 
+    select(where(is.numeric))
+```
+
+Before we start I want to `skimr::skim()` the data to get a general overview of what I'm working with.
+
+```{r}
+helprtc %>%
+    skimr::skim()
+```
+
+There are a few big takeaways from this skimming. 
+
+- First is a large number of NAs. I'm going to outright remove the variables with 200+ missing values as that's nearly half the data set. For the other NAs I'll do median imputation, that is replacing the NA with the median value of that variable. 
+
+- Second are many variables that do not appear to follow a normal distribution. Sadly the `skim()` functions console histograms don't show up on pdf, but trust me here! A few of these numeric variables seem log-linear though, I can log transform those to help the model work better. 
+
+- Finally is the scale of our numeric variables is all over the place. I'll need to normalize all of these variables if I want my model to be able to glean any important information from the data. There is also have an **id** column tucked away in there, I'll need to handle that.
+
+- There's another problem, Looking at some variables there are a few that are identical. I'm not sure what the best way to handle this is outside of manually selecting out the ones I catch. Below are all the variables I caught.
+
+```{r}
+helprtc %>%
+    select(avg_drinks, i1, max_drinks, i2, hospitalizations, d1) %>%
+    head()
+```
+
+Here we setup a recipe, this a convenient way to tackle a lot of the data pre-processing I want to do. This makes life a whole lot easier when working with a data set that's a little moody.
+
+```{r}
+homeless_recipe <- 
+    recipe(homeless01 ~., data = helprtc) %>%
+    # Make homeless01 a factor ----
+    step_mutate(homeless01 = homeless01 %>% as.factor()) %>%
+    
+    # Remove duplicate variables and variables w/ over 200+ NAs ----
+    step_select(-c(i1, i2, d1, anysubstatus, daysanysub, e2b)) %>%
+    
+    # Set id column to be an id, not a predictor ----
+    update_role(id, new_role = "id") %>%
+    
+    # Do median imputation for variables with missing values ----
+    step_impute_median(dayslink, drugrisk, linkstatus) %>%
+    
+    # Normalize numeric predictors so they're on the same scale ----
+    step_normalize(all_numeric_predictors()) %>%
+    
+    # Log transform variables that appear log-normal to help it approach a normal dist ----
+    step_log(avg_drinks, max_drinks, indtot, age, signed = TRUE)
+
+homeless_recipe
+```
+
+Next we'll create our model and pass both it and our recipe into a workflow!
+
+```{r}
+homeless_model <-
+    logistic_reg(mode = "classification") %>%
+    set_engine("glm")
+
+homeless_workflow <-
+    workflow() %>%
+    add_model(homeless_model) %>%
+    add_recipe(homeless_recipe)
+
+homeless_workflow
+```
+
+Workflows are fantastic, they help organize the modeling process and encourage good methodology. Essentially you can bind modeling and pre-processing objects together! 
+
+```{r}
+fit(homeless_workflow, helprtc) %>%
+    broom::tidy() %>%
+    arrange(p.value)
+```
+
+At the risk of interpreting these results incorrectly, it appears that, according to our p-values, that we only really have 3 predictors that we have significant evidence for. It is important to note, that with our `homeless0` column, 0 is for housed individuals and 1 is for unhoused individuals. Our first predictor, `pss_fr` is a quantifier for an individuals perceived social support by friends with higher scores indicating more support. The negative coefficient indicates that higher support from friends is a predictor of not being homeless. We see this negative coefficient with `female` as well, which indicates that being female may make someone less likely to be homeless. `avg_drinks` is the last of the predictors with a p.value less than or close to 0.05, and it shows a pretty strong relationship between a larger number of drinks consumed per day and homelessness. 
+
+\pagebreak
+# Chapter 10
+## Problem 3
+
+```{r}
+my_logreg_null <- glm(homeless01 ~ 1, data = helprtc, family = "binomial")
+# I dont know what Im doing
+
+pred <- 
+    helprtc %>%
+    select(homeless01) %>%
+    bind_cols(
+        pred = stats::predict(my_logreg_null, new_data = helprtc)
+    )
+
+pred %>% head()
+```
+

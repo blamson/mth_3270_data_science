@@ -1,0 +1,84 @@
+---
+title: "Exercises 8"
+author: "Brady Lamson"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(ggplot2)
+```
+
+### Exercise 1
+
+```{r}
+# A
+
+set.seed(500)
+sample(x = 1:100, size = 5 )
+
+# B
+set.seed(500)
+sample(x = 1:100, size = 5 )
+
+# C
+set.seed(NULL)
+sample(x = 1:100, size = 5 )
+```
+
+Removing the set seed makes the program pick a random seed to utilize. Thus the sample is no longer (easily) reproducable. 
+
+### Exercise 2
+
+```{r}
+# A
+
+x <- runif(1000, 0, 1)
+
+# B
+
+ggplot(data.frame(x = x), mapping = aes(x = x)) +
+    geom_histogram(binwidth = 0.1, boundary = 0.0, fill = "blue")
+```
+
+They are roughly evenly spread across 0 to 1. 
+
+### Exercise 3
+
+```{r}
+x <- rnorm(1000, 0, 1)
+
+ggplot(data.frame(x = x), mapping = aes(x = x)) +
+    geom_histogram(binwidth = 0.5, boundary = -3.5, fill = "blue")
+```
+
+The simulated values do follow a bell-shaped pattern.
+
+### Exercise 4
+
+```{r}
+#A 
+
+rbinom(n = 10, prob = 0.7, size = 1)
+
+my.probs <- seq(from = 0.95, to = 0.05, by = -0.1)
+rbinom(n = 10, prob = my.probs, size = 1)
+
+```
+
+### Exercise 5
+
+```{r}
+# B0 = 4 B1 = -1 n = 1000
+set.seed(57)
+
+x <- runif(1000, 0, 10)
+true_probs <- exp(4 - 1 * x) / (1 + exp(4 - 1 * x))
+y <- rbinom(n = 1000, size = 1, prob = true_probs)
+sim.data <- data.frame(X = x, Y = y)
+
+head(sim.data)
+```
+

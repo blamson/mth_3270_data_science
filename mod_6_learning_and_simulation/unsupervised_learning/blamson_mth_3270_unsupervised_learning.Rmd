@@ -1,0 +1,219 @@
+---
+title: "Unsupervised Learning"
+author: "Brady Lamson"
+date: "`r Sys.Date()`"
+output: 
+    pdf_document:
+        dev: png
+        includes:
+            in_header: "preamble.tex"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(ggplot2)
+```
+
+### Exercise 1
+
+```{r}
+my.data <- data.frame(X1 = c(3, 5, 4, 7),
+                      X2 = c(6, 4, 9, 9),
+                      X3 = c(1, 7, 2, 1))
+rownames(my.data) <- c("Obs1", "Obs2", "Obs3", "Obs4")
+
+my.data_dist <- dist(my.data, method = "euclidean")
+my.data_dist
+```
+
+a) The distance between Obs1 and Obs 2 is **6.633**. 
+
+b) Obs4 and Obs3 have a distance of **3.16** which appears to be the shortest.
+
+c) Obs4 and Obs3 would be merged in the first step.
+
+***
+
+### Exercise 2
+
+```{r}
+arr_dist <- dist(USArrests, method = "euclidean")
+#arr_dist
+```
+
+The distance between **Florida** and **Alabam** is 102.001618.
+
+***
+
+### Exercise 3
+
+```{r}
+wine <- rattle::wine %>% select(-Type)
+```
+
+```{r}
+wine_dist <- dist(wine, method = "euclidean")
+wine_hclust <- hclust(wine_dist)
+plot(wine_hclust, cex = 0.7)
+rect.hclust(wine_hclust, k = 2, border = "red")
+```
+
+```{r}
+my_clusters <- cutree(wine_hclust, k = 2)
+my_clusters %>% table()
+```
+
+***
+### Exercise 4
+
+```{r}
+my.x1 <- c(5.2, 4.6, 5.9, 6.8, 10.5, 10.7, 8.6, 10.5, 14.1, 16.4, 14.3, 12.4)
+
+my.x2 <- c(3.6, 4.7, 2.2, 4.5, 7.2, 7.3, 7.1, 9.9, 6.3, 4.2, 6.2, 3.3)
+
+my.data <- data.frame(x1 = my.x1, x2 = my.x2)
+```
+
+```{r}
+# So that everyone has the same randomly selected starting cluster centers:
+set.seed(27)
+
+# Carry out the k means cluster analysis with k = 3:
+my_kmclust <- kmeans(my.data, centers = 3)
+my_kmclust$cluster %>% table()
+```
+
+We have three clusters each with **4 observations** inside of them.
+
+***
+### Exercise 5
+
+```{r}
+set.seed(20)
+
+wine_kmclust <- kmeans(wine, centers = 3)
+kmclusters <- wine_kmclust$cluster
+```
+
+```{r}
+wine %>%
+    pairs(
+        col = kmclusters,
+        main = "Scatterplot Matrix of Wine Data With Clusters",
+        pch = 19
+    )
+```
+
+```{r}
+wine %>%
+    pairs(
+        col = rattle::wine$Type,
+        main = "Scatterplot Matrix of Wine Data With Types",
+        pch = 19
+    )
+```
+
+a) The clusters don't appear to correspond to type very well. With one exception, the bottom row does a fairly decent job of separating out the groups. 
+
+```{r}
+# Standardize each of the 13 variables:
+wine2_std <- scale(wine, center = TRUE, scale = TRUE)
+
+# So that everyone has the same randomly selected starting cluster centers:
+set.seed(20)
+
+# Carry out the k means cluster analysis with k = 3:
+wine_kmclust_std <- kmeans(wine2_std, centers = 3)
+```
+
+```{r}
+my.clusters_std <- wine_kmclust_std$cluster
+pairs(wine,
+      col = my.clusters_std,
+      main = "Scatterplot Matrix of Wine Data With Clusters",
+      pch = 19)
+```
+
+Yes, the clusters here do seem to be corresponding to wine types. 
+
+***
+\pagebreak
+### Exercise 6
+
+```{r}
+wine %>%
+    summarise(across(
+        everything(), list(mean = mean)
+    ))
+```
+
+```{r}
+wine_cntr <-
+    wine %>%
+    scale(center = TRUE, scale = FALSE) %>%
+    as.data.frame()
+
+my_pca <-
+    svd(wine_cntr)
+```
+
+```{r}
+ggplot(data = data.frame(d = my_pca$d, j = 1:13),
+       mapping = aes(x = j, y = d)) +
+    geom_point() +
+    geom_line() +
+    ggtitle("Plot of d vs j")
+```
+
+```{r}
+my_pca$d
+```
+
+What we can see from the vector is that most of the information is kept in the first 4 $V_j$'s. What we need to decide here is what our cutoff is, what do we define as *"close to zero"*. In this case I would abandon all of the $V_j$'s less than 5, keeping the first 8. 
+
+```{r}
+wine_cntr <-
+    wine %>%
+    scale(center = TRUE, scale = TRUE) %>%
+    as.data.frame()
+
+my_pca <-
+    svd(wine_cntr)
+
+ggplot(data = data.frame(d = my_pca$d, j = 1:13),
+       mapping = aes(x = j, y = d)) +
+    geom_point() +
+    geom_line() +
+    ggtitle("Plot of d vs j")
+
+my_pca$d
+```
+
+I'm still not 100% sure here, but I feel like a lot of the $V_j$'s here are still quite valuable. If any, I would only abandon the bottom 2. 
+
+***
+\pagebreak
+### Exercise 7
+
+```{r}
+virginica <-
+    iris %>%
+    filter(Species == "virginica") %>%
+    select(-Species)
+
+vir_cntr <-
+    virginica %>%
+    scale(center = TRUE, scale = FALSE) %>%
+    as.data.frame()
+
+my_pca <- 
+    svd(vir_cntr)
+
+#-----[my_pca$v]------
+my_pca$v
+#-----[my_pca$d]------
+my_pca$d
+```
+
+$V_1$ would be reflecting length and $V_2$ width. I base this guess off of the derived variables. In $V_1$, the coefficients that would be tied to both length variables are high, in $V_2$, the higher coefficients are on what would be the width variables.  

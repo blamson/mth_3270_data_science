@@ -1,0 +1,461 @@
+---
+title: "Homework 1"
+author: Brady Lamson
+date: "2/02/2022"
+output: pdf_document
+---
+
+# Problems 1-5:
+## Problem 1:
+a) Try the commands pi, round(pi), round(pi, digits = 4), and trunc(pi), ceiling(pi), floor(pi). What are the results?
+
+```{r, echo=FALSE}
+glue::glue("The output of pi is {pi}")
+
+glue::glue("The output of round(pi) is {round(pi)}")
+
+glue::glue("The output of round(pi, digits = 4) is {round(pi, digits = 4)}")
+
+glue::glue("The output of trunc(pi) is {trunc(pi)}")
+           
+glue::glue("The output of ceiling(pi) is {ceiling(pi)}")
+
+glue::glue("The output of floor(pi) is {floor(pi)}")
+```
+
+
+b) Try the commands sqrt(16), 16^0.5. Are the results the same?
+```{r, echo=FALSE}
+glue::glue("The output of sqrt(16) is {sqrt(16)}")
+glue::glue("The output of 16^0.5 is {16^0.5}")
+glue::glue("Are the two commands the same? {sqrt(16) == 16^0.5}")
+```
+
+c) Write a command that computes $4^3$
+```{r}
+4^3
+```
+
+d) Try the commands log10(1000), log(1000). Try the command log2(64). What are the results?
+```{r, echo=FALSE}
+glue::glue("The output of log10(1000) is {log10(1000)}")
+glue::glue("The output of log(1000) is {log(1000)}")
+glue::glue("The output of log2(64) is {log2(64)}")
+```
+
+e) Does the text of the help file for log() match your observations?
+
+    - Yes it does! The number next to the log is the base, so log 10 uses a base of 10. The one thing to keep in mind is that log() uses a base of e by default (exp(1) in R). 
+    
+***
+\pagebreak
+## Problem 2.
+Manipulate the following character vector using square brackets [ ] to accomplish the following goals. 
+
+    1) Barry arrives (and gets in the last position of the line)
+    2) Steve is served (and so he leaves)
+    3) Pam arrives and talks her way to the front of the line (with just one item)
+    4) Barry gets impatient and leaves
+    
+```{r}
+queue <- c("Steve", "Russell", "Alison", "Liam")
+queue[length(queue) + 1] <- "Barry"
+queue <- queue[-1]
+queue <- c("Pam", queue)
+queue <- queue[-length(queue)]
+queue
+```
+
+***
+\pagebreak
+## Problem 3. 
+    
+    a) Write a command that lists the objects in your Workspace.
+    
+    b) Write a command that removes x from the Workspace.
+    
+    c) Write a command that removes *all* the objects from your Workspace.
+
+```{r}
+w <- 6
+x <- 7
+y <- 8
+z <- 9
+
+ls()
+rm(x)
+rm(list = ls())
+```
+
+***
+\pagebreak
+## Problem 4
+Consider the below vector.
+    
+a) What is the output of x == 0
+
+```{r}
+x <- c(3, 2, 0, 1, 4, 5, 9, 0, 6, 7, 2, 8)
+x == 0
+```
+    
+b) Write a command involving sum() and the "logical" vector x == 0 that counts the number of elements of x that are equal to 0.
+
+```{r}
+logical_vector <- x == 0
+```
+
+```{r, echo=FALSE}
+glue::glue("The output of sum(logical_vector) is {sum(logical_vector)}")
+```
+
+c) Write a command that determines the *proportion* of elements of x that are equal to 0, assuming you *don't know* the number of elements in x.
+
+```{r}
+proportion <- (sum(logical_vector) / length(logical_vector)) |>
+    round(digits = 3)
+```
+
+```{r, echo=FALSE}
+glue::glue("The proportion of elements of x that are equal to 0 is {proportion}")
+```
+
+***
+\pagebreak
+## Problem 5:
+Using the following data frame:
+```{r}
+numVec <- c(2, 4, 6, 5, 9, 8, 2, 4, 7, 8)
+charVec <- c("a", "b", "c", "c", "b", "c", "a", "b", "b", "c")
+myData <- data.frame(x1 = numVec, x2 = charVec, stringsAsFactors = FALSE)
+```
+
+a) The following commands do the same thing:
+    
+    - myData$x1
+    - myData[["x1"]]
+    - myData[[1]]
+    
+What do they do?
+
+    - These return the first column of the data set, which in this case is all of numVec.
+    
+b) What kind of object is returned by the commands in part a?
+```{r}
+is.vector(myData$x1)
+```
+
+If they return a *vector*, what type of vector is it?
+
+```{r}
+glue::glue("
+           Is myData$x1 a numeric vector or character vector? 
+           Numeric? {is.numeric(myData$x1)}
+           Character? {is.character(myData$x1)}
+           ")
+```
+
+c) What do the following commands do?
+
+```{r}
+myData[2, ]
+myData[, 2]
+```
+
+myData[2, ] returns the second row of the data frame. So (4, b)
+    
+myData[, 2] returns the second column of the data frame. This will be the full vector of characters. 
+
+d) What class of object is myData?
+```{r}
+glue::glue("myData is of class {class(myData)}.")
+```
+
+e) What happens when you pass myData into the summary() command?
+```{r}
+summary(myData)
+```
+
+This command provides the summary statistics, length, class and mode. 
+
+***
+\pagebreak
+
+# Textbook Exercises
+## Problem 1:
+The following code chunk throws an error, why?
+
+```{r}
+#mtcars %>% 
+#    select(mpg, cyl)
+```
+
+The library select() and the pipe %>% are being pulled from isn't specified or loaded. The following code works just fine.
+
+```{r}
+library(dplyr)
+
+mtcars %>%
+    select(mpg, cyl) %>%
+    head()
+```
+
+***
+## Problem 2:
+Which of these kinds of names should be wrapped with quotation marks when used in R?
+
+    - function name (No)
+    
+    - file name (Yes)
+    
+    - the name of an argument in a named argument (No)
+    
+    - object name (No)
+
+***
+\pagebreak
+## Problem 3:
+
+```{r}
+obj1 <- 2:10
+obj2 <- c(2, 5)
+obj3 <- c(TRUE, FALSE)
+obj4 <- 42
+```
+
+```{r}
+obj1 * 10
+obj1[2:4]
+obj1[-3]
+obj1 + obj2
+obj1 * obj3
+obj1 + obj4
+obj2 + obj3
+sum(obj2)
+sum(obj3)
+```
+***
+\pagebreak
+## Problem 4:
+
+```{r}
+mylist <- list(x1 = "sally", x2 = 42, x3 = FALSE, x4 = 1:5)
+
+is.list(mylist)
+names(mylist)
+length(mylist)
+mylist[[2]]
+mylist[["x1"]]
+mylist$x2
+length(mylist[["x4"]])
+class(mylist)
+typeof(mylist)
+class(mylist[[4]])
+typeof(mylist[[3]])
+```
+
+***
+\pagebreak
+## Problem 5:
+What's wrong with the below code
+```{r}
+# help(NHANES, package <- "NHANES")
+```
+
+You typically aren't supposed to use the assignment operator within a function call like this. pacakage = "NHANES" would be better here. 
+
+***
+## Problem 6: 
+CPS, in this context, stands for **Current Population Survey**. This CPS is "used to supplement census information between census years". 
+
+***
+## Problem 7:
+Why does this code throw an error? 
+```{r}
+#mtcars %>%
+#    filter(cylinder == 4)
+```
+
+*cyl* is the column name to filter by, not cylinders.
+
+```{r}
+mtcars %>%
+    filter(cyl == 4) %>%
+    head()
+```
+***
+## Problem 8:
+The date() function takes no arguments and returns a string of the current system date and time. The result of Sys.time() is of class **POSIXct** and **POSIXt**.
+
+***
+\pagebreak
+## Problem 9:
+What do the following commands return? Describe the class of the object as well as its value.
+
+```{r}
+a <- c(10, 15)
+b <- c(TRUE, FALSE)
+c <- c("happy", "sad")
+```
+
+```{r, echo=FALSE}
+x <- data.frame(a, b, c)
+glue::glue("data.frame(a, b, c) is of class {x %>% class()} and returns:")
+x
+```
+
+```{r, echo=FALSE}
+x <- cbind(a, b)
+glue::glue("cbind(a, b) is of class {x %>% class()}")
+x
+```
+
+```{r, echo=FALSE}
+x <- rbind(a, b)
+glue::glue("rbind(a, b) is of class {x %>% class()}")
+x
+```
+
+```{r, echo=FALSE}
+x <- cbind(a, b, c)
+glue::glue("cbind(a, b, c) is of class {x %>% class()}")
+x
+```
+
+```{r, echo=FALSE}
+x <- list(a, b, c)[[2]]
+glue::glue("list(a, b, c)[[2]] is of class {x %>% class()}")
+x
+```
+***
+\pagebreak
+## Problem 10
+For each of the following assignment statements, describe the error (or note why it does not generate an error).
+```{r}
+# result1 <- sqrt 10
+# This has no parentheses around 10
+
+# result2 <-- "Hello to you!"
+# This has one two many '-'s 
+
+# 3result <- "Hello to you"
+# Variable names cannot start with a number.
+
+# result4 <- "Hello to you
+# Theres no second quotation mark
+
+# result5 <- date()
+# This is broken because of the lack of quotation mark from earlier.
+```
+
+***
+## Problem 11.
+The following code chunk throws an error.
+
+```{r}
+# mtcars %>%
+#   filter(cyl = 4)
+```
+
+This is missing the extra equal sign. This would be assigning 4 to cyl which makes no sense. '==' is the comparison operator.
+
+```{r}
+mtcars %>%
+    filter(cyl == 4) %>%
+    head()
+```
+
+***
+\pagebreak
+## Problem 12:
+Describe in words what computations are being done and then, using pipe notation, rewrite the code. 
+
+```{r}
+### Commenting this all out as the code takes forever to run. 
+#library(mosaic)
+# ds <-
+#   read.csv("http://nhorton.people.amherst.edu/r2/datasets/helpmiss.csv")
+#  summarise(group_by(
+#    select(filter(mutate(ds,
+#      sex = ifelse(female == 1, "F", "M")
+#    ), !is.na(pcs)), age, pcs, sex),
+#    sex
+#  ), meanage = mean(age), meanpcs = mean(pcs), n = n())
+```
+
+
+This is reading in a csv file and then the following queries are being called on it in order:
+
+- mutate: Renamed the column "female" to "sex". Also changes the values of the cells in that column to "F" if the value in the cell is 1. If it isn't, the cell is assigned to "M".
+    
+- filter: This removes the rows with 'pcs' that are NA from our query. 
+
+- select: This selects **only** the columns age, pcs and sex.
+    
+- summarise: Shows us three things:
+
+    - The mean age of the male and female samples.
+    
+    - The mean pcs of the male and female samples.
+    
+    - The count of male and female samples. 
+
+This block of code is an abomination and I rewrote it below.
+```{r}
+ds <- read.csv("http://nhorton.people.amherst.edu/r2/datasets/helpmiss.csv")
+
+ds %>% 
+    dplyr::mutate(
+        sex = ifelse(
+            female == 1, "F", "M"
+            )
+        ) %>%
+    dplyr::filter(!is.na(pcs)) %>%
+    dplyr::select(age, pcs, sex) %>%
+    dplyr::group_by(sex) %>%
+    dplyr::summarise(
+        mean_age = mean(age),
+        mean_pcs = mean(pcs),
+        n = n()
+    )
+```
+***
+\pagebreak
+## Problem 13:
+The following concepts should have some meaning to you: package, function, command, argument, assignment, object, object name, data frame, named argument, quoted character string.
+
+Construct an example of R commands that make use of at least four of these. Label which part of your example R command corresponds to each.
+
+For this I'll use a helper function I wrote to help me with my Calc III homework! This function handles vector projection for me and returns a vector.
+
+```{r}
+# vector_projection is the name of a function.
+# Everything inside of the parentheses of function() is an argument.
+# All of the arguments are also named here. vector_1 as an example.
+# assignment is happening each time an arrow is used.
+# vector_1_mag is an object, a numeric vector of length 1.
+# It also has a name, vector_1_mag
+
+vector_projection <- function(vector_1, vector_2, two_onto_one = TRUE) {     
+    ### Variables ---- 
+    dot_product <- vector_1 %*% vector_2 
+    vector_1_mag <- vector_1^2 |>
+        sum() |>
+        sqrt()
+    vector_2_mag <- vector_2^2 |>
+        sum() |>
+        sqrt()
+    
+    if (two_onto_one) {
+        projection_scalar <- (dot_product / vector_1_mag^2) |>
+            as.vector()
+        return(projection_scalar * vector_1)
+    }
+    else {
+        projection_scalar <- (dot_product / vector_2_mag)^2 |>
+            as.vector()
+        return(projection_scalar * vector_2)
+    }
+}
+```
+

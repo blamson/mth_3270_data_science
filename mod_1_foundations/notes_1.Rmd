@@ -1,0 +1,1728 @@
+---
+title: "MTH 3270 Exercises I"
+author: "Brady Lamson"
+date: "1/22/2022"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#'%>%' <- magrittr::'%>%' 
+library(dplyr)
+```
+
+# 3: Getting Started with R
+## 3.1: Arithmetic Operators
+
+- Below is a list of mathematical operators ordered from highest to lowest precedence:
+
+| Operator | Function |
+|---|---|
+| ^ | Exponentiation |
+| - | Unary minus sign |
+| %% | Modulo |
+| %/% | Integer Division |
+| * / | Multiplication, Division |
+| + - | Addition, Subtraction |
+
+### Exercise 1:
+Guess what the result of each of the following will be, then check your answers.
+
+a) $4 + 2 * 8$
+    - I would guess **20**. $2*8 = 16$ and $16 + 4 = 20$ \vspace{12pt}
+    
+b) $4 + 2 * 8 + 3$
+    - I would guess **23**. $8 * 2$ would go first, and then 3 and 4 would be added afterward. \vspace{12pt}
+
+c) $-2^2$
+    - This one trips me up on TI calculators all the time. The exponential goes first, so we'll get a **-4** here. **Always** use paranthesis with exponentials. \vspace{12pt}
+
+d) $1 + 2^2 * 4$
+    - This is **17**. $2^2$ goes first, multiply that by 4 and then add 1. \vspace{12pt}
+
+e) $(2 + 4) / 3 / 2$
+    - This is **1**. The division by 3 wants to go first, but it can't. The numbers in the paranthesis have to be resolved so division can happen. We get $6 / 3 = 2$ and $2 / 2 = 1$. \vspace{12pt}
+
+```{r, include=TRUE}
+# Tests
+result_3.1 <- c(
+    4 + 2 * 8, 
+    4 + 2 * 8 + 3,
+    -2^2,
+    1 + 2^2 * 4,
+    (2 + 4) / 3 / 2
+    )
+
+data.table::data.table(
+    "exercise" = LETTERS[1:5],
+    "result" = result_3.1
+    ) %>%
+    glue::glue_data("The output of exercise {exercise} is {result}")
+```
+
+***
+\pagebreak
+## 3.2: Special Characters, Special Values, Etc.
+
+- R ignores white space.
+    - This means you can carry out commands across multiple lines! This is very useful for readability. 
+    
+- Sometimes you'll have to deal with special values. Two of these are:
+    - Inf (Infinity)
+    - Nan (Not a number)
+
+- Any positive number divided by 0 will result in **Inf**. 0 divded by 0 results in **NaN**. 
+
+### Exercise 2:
+Guess what the result of each of the following will be, then check your answers.
+
+a) $5 / 0$
+     - My guess would be **Inf** based on the note above. \vspace{12pt}
+     
+b) $1 / \; \text{Inf}$
+    - My guess would be **0**. It makes sense to my brain that 1 divded by an arbitrarily large number would approach 0, so we'll go with that! \vspace{12pt}
+    
+c) $0 / 0$
+    - My guess would be **NaN** based on the note above. \vspace{12pt}
+    
+d) $\text{Inf} + 1$
+    - This will just be **Inf**. \vspace{12pt}
+    
+```{r}
+# Tests
+result_3.2 <- c(
+    5 / 0,
+    1 / Inf,
+    0 / 0,
+    Inf + 1
+)
+
+data.table::data.table(
+    "exercise" = LETTERS[1:4],
+    "result" = result_3.2
+    ) %>%
+    glue::glue_data("The output of exercise {exercise} is {result}")
+```
+
+***
+\pagebreak
+## 3.3: Variables and the Assignment Operator
+
+- Atomic Values
+    - Numeric
+        - Double (Double-precision floating-point, can store integer and non-integer decimals)
+        - Integer
+    - Character
+    - Logical
+    - Complex
+    - Raw
+
+Another type of variable is NULL, this represents an "empty" variable.
+
+### Exercise 3:
+What type of variable is created in each of the following commands? Check your answers by typing typeof(x):
+
+a) x <- 45
+    - This is an integer.
+ 
+b) x <- "foo"
+    - This is a character
+    
+c) x <- FALSE
+    - This is a logical
+    
+d) x <- NULL
+    - This is a NULL
+    
+```{r}
+# Tests
+
+x <- 45
+typeof(x)
+
+x <- "foo"
+typeof(x)
+
+x <- FALSE
+typeof(x)
+
+x <- NULL
+typeof(x)
+```
+
+### Exercise 4:
+Guess the final value of x in the following sequence of commands. Then check your answer.
+
+```{r}
+x <- 2
+x <- x * 2 + 1
+x <- x * 3
+# My prediction is that x will be 15. 
+x
+```
+
+### Exercise 5:
+Write commands that do the following (in order):
+
+```{r}
+# 1: Create a variable y containing the value 5.
+y <- 5
+
+# 2: Overwrite the value of y by the value 3 * y
+y <- 3 * y
+
+# 3: Copy the value y into a new variable z
+z <- y
+
+```
+
+***
+\pagebreak
+## 3.4: Introduction to Functions
+### Exercise 6:
+Look at the help page for sqrt() by typing:
+
+? sqrt
+
+Besides sqrt(), what other R function is described on the help page?
+    - abs() and sqrt() are both described. 
+    
+### Exercise 7:
+Look at the help page for signif() by typing:
+
+? signif
+
+From the help page, how many arguments does signif() have?
+    - It has two arguments, **x** and **digits**. 
+    
+### Exercise 8:
+Look at the arguments for signif(). This function prints the value passed for x to the number of significant digits specified by digits. 
+a) From the help page, what is the default value for the digits argument?
+    - 6
+b) To how many significant digits will the value 342.88937 be printed using the default value for the digits argument?
+    - It will be to 6 significant digits as a digits value is not specified. That would probably be **342.889**.
+    
+### Exercise 9:
+a) Write a command using *named argument matching* that prints the value 342.88937 to 5 significant digits.
+b) Write a command using *positional matching* that prints the value 342.88937 to 5 significant digits.
+
+```{r}
+signif(digits = 5, x = 342.88937)
+signif(342.88937, 5)
+```
+
+***
+\pagebreak
+## 3.5: The R Workspace
+### Exercise 10:
+Create a few variables named x, y and z. Then type the following sequence of commands, paying attention to the output from ls() each time:
+
+```{r}
+x = 1
+y = 'a'
+z = NaN
+
+ls()
+rm(x)
+ls()
+rm(list = ls())
+ls()
+```
+The three calls to ls() return everything in the current workspace. So, in that case, it's the pipe I took from magrittr, my previous result lists and the 3 different variables I had just made. The rm() removes the x so that isn't present in the next ls() and then the next rm() removes everything in the current workspace. Because of that, the final ls() simply returns character(0) as nothing is in the workspace. It is an empty list. 
+
+***
+\pagebreak
+## 3.6: A Preview of R Data Structures
+
+- **Vectors** can store any of the *atomic* types
+- **Matrices** are like two-dimensional vectors. 
+- One limitation of vectors is that everything in them must be the same type. Another type of container, called a **list** does not have that limitation. 
+    - Lists can contain anything. For example they can contain vectors and even other lists. They're very versatile. 
+- **Data Frames** are like matrices but can have a mix of *categorical* and *quantitative* data types.
+    - It is of note that each *column* of a data frame is a *vector*. 
+- An **array** is like a matrix but it can have more than two dimensions (e.g. rows, columns, and layers).
+
+### Exercise 11:
+Write a command using c() that creates a vector containing the values: (3,7,2,8)
+```{r}
+c(3, 7, 2, 8)
+```
+
+
+### Exercise 12:
+Write a command using matrix() that creates the following matrix:
+```{r}
+matrix(
+    data = seq(from = 2, to = 8, by = 2), nrow = 2, ncol = 2
+    )
+```
+
+### Exercise 13: 
+Write a command using list() that creates a list containing the following elements: ("e", 9, TRUE)
+```{r}
+list("e", 9, TRUE)
+```
+
+### Exercise 14:
+Write a command using data.frame that creates a data frame containing the following data set:
+
+| Category | Value |
+|---|---|
+| A | 5 |
+| A | 4 |
+| B | 6 |
+| B | 6 |
+| C | 9 |
+| C | 8 |
+
+```{r}
+data.frame(
+    "Category" = sort(rep(LETTERS[1:3], 2)),
+    "Value" = c(5, 4, 6, 6, 9, 8)
+)
+```
+
+# 4: Vectors
+## 4.2: Vector Arithmetric and Recycling
+### Exercise 15: 
+Guess the result of the following code.
+
+This code snippet will simply combine the two vectors resulting in a single vector of 2:9.
+```{r}
+x <- c(2, 3, 4, 5)
+y <- c(6, 7, 8, 9)
+c(x, y)
+```
+
+This code snippet will result in a vector of (8, 10, 12, 14).
+```{r}
+x + y
+```
+
+### Exercise 16: 
+Guess the result of the following code.
+
+This code snippet will add 1 to the vector x, giving (3, 4, 5, 6)
+```{r}
+x <- c(2, 3, 4, 5)
+x + 1
+```
+
+This code snippet will multiply all values in the vector by 2, giving (4, 6, 8, 10)
+```{r}
+x * 2
+```
+
+### Exercise 17:
+Guess the result of the following code.
+
+This code snippet will utilize some recycling. You'll get $6+2$, $7+3$ and, due to recycling, $8+2$. As a result we'll get (8, 10, 10)
+```{r}
+y <- c(6, 7, 8)
+z <- c(2, 3)
+y + z
+```
+
+### Exericse 18:
+Guess the result of the following code.
+
+Both is.vector() functions will return TRUE. That's due to single-valued variables and constants being vectors of length 1, and also the fact that both $a$ and $b$ here are equivalent operations.
+
+```{r}
+# a
+x <- 2
+is.vector(x)
+
+# b
+is.vector(2)
+```
+
+***
+\pagebreak
+## 4.3: Vector Coercion
+- All elements of a vector must be the same type, so if you try to combine vectors of different types, they'll be ***coerced*** to the most *flexible* type. Types from least to most flexible are:
+
+| Flexibility | Type |
+|---|---|
+| 1 (Least Flexible) | Logical |
+| 2 | Integer |
+| 3 | Double |
+| 4 (Most Flexible) | Character |
+
+
+### Exercise 19:
+Guess the result of the following code.
+
+a) The below code will result in a vector of ("2", "3", "a") due to integers being less flexible than characters.
+```{r}
+x <- c(2, 3, "a")
+x
+```
+
+b) Logicals are the least flexible, so TRUE will be coerced into a 1. The result will be (2, 3, 1)
+```{r}
+x <- c(2, 3, TRUE)
+x
+```
+
+c) Logicals are the least flexible so they'll be coerced to strings. The result will be ("a", "b", "FALSE", "TRUE")
+```{r}
+x <- c("a", "b")
+y <- c(FALSE, TRUE)
+c(x, y)
+```
+
+***
+\pagebreak
+## 4.4: Common Vector Operations
+### Exercise 20:
+Consider the following vector:
+```{r}
+x <- c(7, 6, 4, 2, 3, 5)
+```
+
+Guess the result of the following code. 
+
+a) x[2]
+    - This will be the second index, so **6**.
+b) x[-2]
+    - This will be all *but* the second index, so **(7, 4, 2, 3, 5)**
+c) x[c(1, 2)]
+    - This is the first and second index, so **(7, 6)**
+d) x[c(2, 1)]
+    - This is the second and first index, so **(6, 7)**
+e) x[1] <- 5
+    - This changes the first index, so x is now **(5, 6, 4, 2, 3, 5)**
+    
+```{r}
+x[2]
+x[-2]
+x[c(1,2)]
+x[c(2,1)]
+```
+```{r}
+x[1] <- 5
+x
+```
+
+### Exercise 21:
+Consider the following vector:
+```{r}
+x <- c(7, 6, 4, 2, 3, 5)
+
+# a) Write a command that returns the 4th element of x
+x[4]
+
+# b) Write a command that replaces the 4th element of x with the value 1
+x[4] <- 1
+
+# c) Write a command that returns all but the 6th element of x
+x[-6]
+
+```
+
+### Exercise 22:
+Guess the result of the following code:
+
+```{r}
+x <- c(7, 6, 4, 2)
+ans <- x[c(2, 1, 3, 4)]
+```
+
+This code snippet is simply reordering the vector. What we get from this is **(6, 7, 4, 2)**
+
+```{r}
+ans
+```
+
+### Exercise 23:
+Consider the following vector:
+```{r}
+x <- c(7, 6, 4, 2, 3, 5)
+
+# a) Sort the vector in ascending order.
+sort(x)
+
+# b) Sort the vector in reverse order.
+rev(x)
+
+# c) Sort the vector in descending order.
+sort(x, decreasing = TRUE)
+```
+
+### Exercise 24:
+Consider the same vector as previous. Guess the result of the following code.
+```{r}
+ans <- x[c(FALSE, FALSE, TRUE, FALSE, FALSE, TRUE)]
+```
+
+This code snippet will return only the values with TRUE at their index. So we'll get **(4, 5)**.
+```{r}
+ans
+```
+### Exercise 25:
+Guess the result of the following code:
+
+a) 1:5
+    - This will return a vector 1 through 5.
+    
+b) 6:10
+    - This will return a vector 6 through 10.
+
+c) 5:1
+    - This will return a vector 5 through 1, descending.
+    
+```{r}
+1:5
+6:10
+5:1
+```
+
+### Exercise 26:
+Guess the result of the following code:
+
+is.vector(1:5)
+    - My guess would be this returning TRUE. 
+    
+```{r}
+is.vector(1:5)
+```
+
+### Exercise 27:
+Guess the result of the following code:
+
+a) seq(from = 1, to = 2.5, by = 0.5)
+    - (1, 1.5, 2, 2.5)
+b) seq(from = 2.5, to = 1, by = -0.5)
+    - (2.5, 2, 1.5, 1)
+    
+```{r}
+seq(from = 1, to = 2.5, by = 0.5)
+seq(from = 2.5, to = 1, by = -0.5)
+```
+
+### Exercise 28:
+Guess the result of the following code:
+
+a) rep(2, times = 3)
+    - (2, 2, 2)
+
+b) rep(1:2, times = 3)
+    - (1, 2, 1, 2, 1, 2)
+
+```{r}
+rep(2, times = 3)
+rep(1:2, times = 3)
+```
+
+***
+\pagebreak
+## 4.5: Comparison Operators
+### Exercise 29:
+Consider the following vector:
+```{r}
+x <- c(3, 4, 10)
+```
+
+Guess the result of the following code.
+a) x == 4
+    - (FALSE, TRUE, FALSE)
+b) x > 4
+    - (FALSE, FALSE, TRUE)
+c) x >= 4
+    - (FALSE, TRUE, TRUE)
+d) x != 4
+    - (TRUE, FALSE, TRUE)
+    
+```{r}
+x == 4
+x > 4
+x >= 4
+x != 4
+```
+
+### Exercise 30:
+Consider the following two vectors:
+```{r}
+x <- c(3, 4, 10)
+y <- c(3, 4, 5)
+```
+
+Guess the result of the following code:
+a) x == y
+    - (TRUE, TRUE, FALSE)
+b) x != y
+    - (FALSE, FALSE, TRUE)
+
+```{r}
+x == y
+x != y
+```
+
+### Exercise 31:
+Guess the result of the following code:
+a) TRUE + TRUE + FALSE + FALSE + FALSE
+    - 2
+b) sum(c(TRUE, TRUE, FALSE, FALSE, FALSE))
+    - 2
+```{r}
+TRUE + TRUE + FALSE + FALSE + FALSE
+sum(c(TRUE, TRUE, FALSE, FALSE, FALSE))
+```
+
+### Exercise 32:
+Consider the following vector:
+```{r}
+x <- c(10, 8, -2, -6, -5)
+```
+
+Guess the result of the following code:
+a) x > 0
+    - (TRUE, TRUE, FALSE, FALSE, FALSE)
+b) sum(x > 0)
+    - 2
+
+```{r}
+x > 0
+sum(x > 0)
+```
+
+
+***
+\pagebreak
+## 4.6: Using any(), all(), and which(), which.min(), **and** which.max()
+### Exercise 33:
+Consider the vector
+```{r}
+x <- c(2,8,6,7,1,4,9)
+```
+Guess the result of the following code:
+a) any(x == 4)
+    - TRUE
+b) all(x == 4)
+    - FALSE
+c) which(x == 4)
+    - 6
+d) which(x != 4)
+    - (1, 2, 3, 4, 5, 7)
+
+```{r}
+# Tests
+any(x == 4)
+all(x == 4)
+which(x == 4)
+which(x != 4)
+```
+
+### Exercise 34:
+Consider the following vectors:
+```{r}
+x <- c(53, 42, 64, 71, 84, 62, 95)
+y <- c(53, 41, 68, 71, 81, 66, 65)
+```
+a) Write a command involving any() and == to determine if *any* of the values in x are equal to their corresponding value in y.
+```{r}
+any(x == y)
+```
+b) Write a command involving all() and == to determine if *all* of the values in x are equal to their corresponding value in y.
+```{r}
+all(x == y)
+```
+c) Write a command involving which() and == to determine *which* of the values in x are equal to their corresponding value in y.
+```{r}
+which(x == y)
+```
+
+### Exercise 35:
+Consider the x vector from the previous problem. Guess the output of the following code:
+
+a) which.min(x)
+    - 42
+b) which.max(x)
+    - 95
+```{r}
+which.min(x)
+which.max(x)
+```
+
+***
+\pagebreak
+## 4.7: Computing Summary Statistics
+### Exercise 36: 
+Consider the following data set:
+```{r}
+x <- c(10, 147, 7, 6, 7, 12, 9, 12, 11, 8)
+
+# a) Use mean() to compute the mean
+mean(x)
+
+# b) Use median() to calculate the median
+median(x)
+
+# c) Use sd() to calculate the standard deviation
+sd(x)
+```
+
+### Exercise 37: 
+The standard deviation measures variation in a set of data.
+
+a) What do you think the standard deviation of the following dataset will be? u <- c(5, 5, 5, 5, 5)
+    - 0. All the values are the same so there is no variation.
+```{r}
+sd(c(5, 5, 5, 5, 5))
+```
+b) Which of the following two data sets do think will have a higher standard deviation?
+    - The second one will have the higher standard deviation. The means of the two data sets are the same, but the second data set has values far further away from said mean.
+```{r}
+sd(c(5, 6, 7))
+sd(c(1, 6, 11))
+```
+
+***
+\pagebreak
+## 4.8: Vectorized Computations
+### Exercise 38:
+The function abs() takes the absolute value of a number. Guess the result of the following command. 
+    - (1, 3, 4, 2)
+```{r}
+abs(c(-1, 3, -4, -2))
+```
+### Exercise 39:
+Consider the following temperature measurements, in degree Celsius:
+```{r}
+degreesC <- c(23, 19, 21, 22, 18, 20, 24, 25)
+```
+The relationship between Celsius ($^{\circ}C$) and Fahrenheit ($^{\circ}F$) is:
+\[^{\circ}F = \frac{9}{5} \cdot ^{\circ}C + 32\]
+Recall that arithmetic operators such as * and + are *vectorized*. Describe in words what the following command will do to the Celsius temperatures. Try it.
+    - The following code will multiply each individual value by $\frac{9}{5}$ and then add 32 to them, thus converting each value in the vector from Celsius to Fahrenheit and assigning that to a new variable, degreesF. 
+```{r}
+degreesF <- (9/5) * degreesC + 32
+degreesF
+```
+
+***
+\pagebreak
+## 4.9: Filtering
+### Exercise 40:
+Consider again the vector:
+```{r}
+x <- c(538, 432, 684, 716, 814, 624, 956)
+```
+
+Guess the result of the following code:
+a) x[x > 700]
+    - (716, 814, 956)
+b) subset(x, subset = x > 700)
+    - (716, 814, 956)
+c) Write a command involving square brackets [ ] that extracts from x all values that are *not equal* to 814
+```{r}
+x[x > 700]
+subset(x, subset = x > 700)
+
+# c) 
+subset(x, subset = x != 814)
+```
+\pagebreak
+
+### Exercise 41: 
+Consider this data set:
+
+| Gender | Age | Blood Pressure |
+|---|---|---|
+| f | 33 | 118 |
+| m | 35 | 115 |
+| f | 29 | 110 |
+| m | 34 | 117 |
+| m | 37 | 112 |
+| f | 36 | 119 |
+| f | 35 | 114 |
+| f | 40 | 121 |
+| m | 43 | 123 |
+| f | 38 | 117 |
+| f | 40 | 120 |
+| m | 44 | 121 |
+
+```{r}
+Gender <- c("f", "m", "f", "m", "m", "f", "f", "f", "m", "f", "f", "m")
+Age <- c(33, 35, 29, 34, 37, 36, 35, 40, 43, 38, 40, 44)
+BP <- c(118, 115, 110, 117, 112, 119, 114, 121, 123, 117, 120, 121)
+
+ex_41_df <- data.table::data.table(
+    "Gender" = Gender,
+    "Age" = Age,
+    "Blood Pressure" = BP
+) %>% tibble::as_tibble()
+
+ex_41_df
+```
+
+One of the commands below extracts the blood pressure of just the males, the other extracts the ages of those whose blood pressure exceeds 117. Which one is which?
+
+a) Age[BP > 117]
+    - This one extracts the ages of people with a blood pressure of more than 117.
+b) BP[Gender == "m"]
+    - This one extracts the blood pressure of the males in the data set.
+
+***
+\pagebreak
+## 4.10: NA Values
+### Exercise 42:
+Guess the result of the following code:
+a) 3 == NA
+    - NA
+b) NA == NA
+    - NA
+```{r}
+3 == NA
+NA == NA
+```
+### Exercise 43:
+Consider the vector:
+```{r}
+x <- c(1, 2, NA)
+```
+
+Guess the result of the following code:
+a) is.na(x)
+    - FALSE FALSE TRUE
+b) x[is.na(x)] <- 0
+    - (1, 2, 0)
+
+### Exercise 44:
+Consider the same vector as in Exercise 43:
+
+Guess the result of the following code: 
+a) sum(x)
+    - NA
+b) sum(x, na.rm = TRUE)
+    - 3
+```{r}
+sum(x)
+sum(x, na.rm = TRUE)
+```
+
+***
+\pagebreak
+# 5: Matrices
+## 5.1: Creating and Examining Matrices
+### Exercise 45:
+Here's a matrix x
+```{r}
+x <- c(8, 4) %>%
+    rep(3) %>%
+    sort(decreasing = TRUE) %>%
+    matrix(nrow = 2, byrow = TRUE)
+x
+```
+Guess the result of the following code:
+a) dim(x)
+    - 2, 3
+b) nrow(x)
+    - 2
+c) ncol(x)
+    - 3
+```{r}
+dim(x)
+nrow(x)
+ncol(x)
+```
+### Exercise 46:
+What happens when you run the following command?
+    - matrix(c(1,2,3), nrow = 4, ncol = 2)
+    
+My guess:
+$$
+\begin{bmatrix}
+1 & 2 \\
+2 & 3 \\
+3 & 1 \\
+1 & 2
+\end{bmatrix}
+$$
+```{r}
+matrix(c(1,2,3), nrow = 4, ncol = 2)
+```
+
+### Exercise 47: 
+Consider the matrix:
+$$
+\begin{bmatrix}\
+5 & 5 \\
+4 & 4
+\end{bmatrix}
+$$
+
+Do you think the following commands will produce the matrix above?
+a) x <- matrix(c(5, 4, 5, 4), nrow = 2, ncol = 2)
+    - Yes I do. Since it goes by column this should work just fine.
+b) x <- cbind(c(5, 4), c(5, 4))
+    - This will work as well. 
+c) x <- rbind(c(5, 5), c(4, 4))
+    - I think even this one works
+    
+```{r}
+matrix(c(5, 4, 5, 4), nrow = 2, ncol = 2)
+cbind(c(5, 4), c(5, 4))
+rbind(c(5, 5), c(4, 4))
+```
+
+***
+\pagebreak
+## 5.2 General Matrix Operations
+### Exercise 48: Consider the following matrix
+```{r}
+x <- matrix(1:9, nrow = 3, ncol = 3)
+x
+```
+
+Guess the result of the following code:
+a) x[1, 3]
+    - 7
+    
+b) x[1, ]
+    - 1, 4, 7
+    
+c) x[, 3]
+    - 7, 8, 9
+    
+d) x[, -3]
+    - My guess: $\big(\begin{smallmatrix}
+1 & 4 \\
+2 & 5 \\
+3 & 6
+\end{smallmatrix}\big)$
+    
+```{r}
+# Tests
+
+x[1, 3]
+x[1,]
+x[, 3]
+x[, -3]
+```
+
+### Exercise 49:
+Consider the following matrix:
+```{r}
+x <- matrix(1:6, nrow = 2, ncol = 3)
+x
+```
+What does the following command do?
+x[, c(3,1,2)]
+    - This will return the 3rd column, the 1st column, followed by the 2nd column. It may look like: $\big(\begin{smallmatrix}
+5 & 1 & 3 \\
+6 & 2 & 4 \\
+\end{smallmatrix}\big)$
+
+```{r}
+x[, c(3,1,2)]
+```
+
+\pagebreak
+***
+## 5.3: The apply() Function
+### Exercise 50:
+Consider the following matrix x:
+```{r}
+x <- matrix(
+    c(8, 6, 3, 6, 5, 7),
+    nrow = 3, ncol = 2
+    )
+x
+```
+Guess the result of the following code:
+a) apply(x, MARGIN = 1, FUN = sum)
+    - MARGIN 1 indicates the function will operate over the rows. Therefore, I would think we would get:
+        - 14, 11, 10
+b) apply(x, MARGIN = 2, FUN = min)
+    - MARGIN 2 indicates we're operating over columns this time. So we'll get the minimum of each column.
+        - 3, 5
+```{r}
+apply(x, MARGIN = 1, FUN = sum)
+apply(x, MARGIN = 2, FUN = min)
+```
+
+### Exercise 51:
+a) Using the *USPersonalExpenditure* data set, which command will find the mean expenditure for each of the five expenditure categories?
+    - apply(X = USPersonalExpenditure, MARGIN = 1, FUN = mean)
+    - apply(X = USPersonalExpenditure, MARGIN = 2, FUN = mean)
+        - The **first** one would give what we want. MARGIN = 1 has the function work over the rows. 
+
+```{r}
+apply(X = USPersonalExpenditure, MARGIN = 1, FUN = mean)
+```
+```{r}
+apply(X = USPersonalExpenditure, MARGIN = 2, FUN = mean)
+```
+
+b) Using the *USPersonalExpenditure* data set, which command will find the mean expenditure for each of the five expenditure categories?
+    - apply(X = USPersonalExpenditure, MARGIN = 1, FUN = sum)
+    - apply(X = USPersonalExpenditure, MARGIN = 2, FUN = sum)
+        - The second is what we want, MARGIN = 2 operates over columns, which will give us information on the years.
+        
+```{r}
+apply(X = USPersonalExpenditure, MARGIN = 1, FUN = sum)
+```
+```{r}
+apply(X = USPersonalExpenditure, MARGIN = 2, FUN = sum)
+```
+
+***
+\pagebreak
+# 6: Lists
+## 6.1: Creating and Examining Lists
+### Exercise 52
+Using the following list:
+a) Use str() to look at the structure of the list. Report the results.
+    - Employees is made up of 3 things, a character vector of names, a number vector of salaries and a vector of logicals.
+b) Use length() to find the number of elements in the list. Report the results.
+    - There are 3 elements in the list. This makes sense as we have names, salaries and union. Those vectors individual lengths is not accounted for here.
+
+```{r}
+Employees <- list(Name = c("Joe", "Kim", "Ann", "Bob"),
+Salary = c(56000, 67000, 60000, 55000),
+Union = c (TRUE, TRUE, FALSE, FALSE))
+
+str(Employees)
+paste("---")
+length(Employees)
+```
+
+***
+\pagebreak
+## 6.2: General List Operations
+### Exercise 53:
+Using the Employees list, guess the results of the following code:
+a) Employees[[2]]
+    - This returns the second item in this list, in this case it'd be the number vector for Salary.
+b) Employees$Salary
+    - This is equivalent to problem a). 
+c) Write a command involving [[ ]] that returns the "logical" vector Union from the Employees list
+d) Now write a command involving $ that returns the "logical" vector Union from the Employees list.
+
+```{r}
+# Tests
+## c)
+Employees[[3]]
+print("---")
+## d)
+Employees$Union
+```
+
+\pagebreak
+***
+## 6.3: Named List Elements
+### Exercise 54:
+Here's a simple list x:
+```{r}
+x <- list(x1 = c(1, 2), x2 = c("a", "b"), x3 = 12)
+```
+What will the following command return? Check your answer.
+    - This will return the names of the list, so x1, x2 and x3. 
+
+```{r}
+names(x)
+```
+
+***
+\pagebreak
+## 6.4: Applying a function to a list using lapply() and sapply(). 
+### Exercise 55: 
+Heres the HtWtAge list again
+```{r}
+HtWtAge <- list(
+    Height = c(65, 68, 70, 60, 61), 
+    Weight = c(160, 171, 158, 148, 215), 
+    Age = c(23, 20, 37, 40, 44)
+)
+```
+
+a) Write a command using lapply(), with FUN = max, that returns a *list* containing the maximum value of each variable (Height, Weight, and Age). 
+
+b) Now write a command using sapply() that does the same thing, but returns a *vector*. 
+
+```{r}
+# a)
+lapply(HtWtAge, FUN = max)
+# b)
+sapply(HtWtAge, FUN = max)
+```
+
+***
+\pagebreak
+# 7: Data Frames
+## 7.1: Creating and Viewing Data Frames
+### Exercise 56: 
+a) Here's the **mice data set** as three vectors:
+```{r}
+col <- c("white", "grey", "black", "brown", "black", "white", "black",
+"white")
+wt <- c(23, 21, 12, 26, 25, 22, 26, 19)
+len <- c(3.8, 3.7, 3.0, 3.4, 3.4, 3.1, 3.5, 3.2)
+```
+
+After creating the vectors, write a command involving data.frame() that creates a data frame containing the data. Make sure the column names are Color, Weight and Length. 
+
+```{r}
+mice.data <- data.frame(
+    "Color" = col,
+    "Weight" = wt,
+    "Length" = len
+)
+
+mice.data
+```
+
+b) Before proceeding, remove the data frame you just created from your workspace.
+
+```{r}
+rm(mice.data)
+```
+
+the file **mice.txt** contains the mice data set. Load the code into R and show the data set.
+```{r}
+#my.file <- file.choose()
+```
+
+```{r}
+# Breaks when knitting to pdf. 
+#my.file
+```
+
+c) Save that file to a csv and run the csv.
+
+```{r}
+# This breaks on 
+#mice.data <- read.csv(my.file, sep = "", header = TRUE)
+```
+
+```{r}
+#mice.data
+```
+
+Note: Due to the nature of file.choose() this breaks when the work environment is altered. An actual workable solution will be used instead.
+
+```{r}
+mice.data <- read.delim("mice.txt", sep = "") %>%
+    as.data.frame()
+```
+
+
+d) Now type the following commands and report the results:
+
+```{r}
+nrow(mice.data)
+ncol(mice.data)
+head(mice.data)
+names(mice.data)
+str(mice.data)
+```
+
+***
+\pagebreak
+## 7.2: Accessing and Replacing Elements, Rows, or Columns of a Data Frame
+### Exercise 57: Consider the following data on nine people. The following commands will create a data frame containing the data. 
+```{r}
+status <- c("Married", "Single", "Single", "Married", "Single",
+"Married", "Married", "Single", "Single")
+age <- c(36, 33, 21, 29, 19, 35, 39, 28, 21)
+educ <- c("HS Diploma", "Bachelor of Arts", "Bachelor of Science",
+"Bachelor of Science", "HS Diploma", "Bachelor of Arts",
+"Master of Science", "HS Diploma", "HS Diploma")
+
+my.data <- data.frame(Status = status, Age = age, Education = educ)
+```
+
+a) Guess what each of the following commands will return, then check your answers.
+    
+    - my.data[6,2]
+        
+        - This will return the information in row 6 column 2, so the age **35** I think. 
+    
+    - my.data[6, ]
+        
+        - This will return everything in row 6. So thats **Married, 35, Bachelor of Arts**
+        
+    - my.data[, 2]
+        
+        - This will return everything in column 2, so the entire set of Ages.
+        
+    - my.data$Age
+    
+        - This is equivalant to the above code. It will return the entire set of ages.
+        
+    - my.data[[2]]
+    
+        - I *think* this will return the entire second row? So **Single, 33, Bachelor of Arts**.
+
+```{r}
+my.data[6, 2]
+my.data[6, ]
+my.data[, 2]
+my.data$Age
+my.data[[2]]
+```
+
+b) Write three different commands that return the entire 3rd column (Education) of the data frame.
+
+```{r}
+# First solution []
+my.data[, 3]
+print("---[Second Solution]---")
+# Second solution $
+my.data$Education
+print("---[Third Solution]---")
+# Third solution [[]]
+my.data[[3]]
+```
+
+c) The nine people have each aged one year since the data were collected. Here's a vector containing their current ages:
+
+```{r}
+age2 <- c(37, 34, 22, 30, 20, 36, 40, 29, 22)
+```
+
+Describe in words what the following commands do
+
+    - my.data$Age <- NULL
+        
+        - Replaces all ages with NULL
+    
+    - my.data$Age2 <- age2
+        
+        - Creates a new column, Age2 with the values in the age2 vector.
+    
+d) Here's another vector:
+
+ageofspouse <- c(39, NA, NA, 34, NA, 27, 30, NA, NA)
+
+    - my.data$AgeOfSpouse <- ageofspouse
+        
+        - Creates a new column, AgeOfSpouse with the values in the ageofspouse vector
+    
+    - my.data[["AgeOfSpouse"]] <- ageofspouse
+        
+        - Equivalant to the previous set of code.
+        
+***
+\pagebreak
+## 7.3: Viewing and Changing Variable Names in a Data Frame
+### Exercise 58:
+Given the data frame:
+```{r}
+x <- data.frame(A = 1:5, B = 6:10, C = c("a", "b", "c", "d", "e"))
+```
+
+a) Guess what each of the following commands will return, then check your answers.
+
+    - names(x)
+        
+        - The names of the data.frame, so **A, B and C**. 
+        
+    - is.vector(names(x))
+    
+        - It should be **TRUE**
+        
+    - typeof(names(x))
+    
+        - **Character**
+        
+```{r}
+names(x)
+is.vector(names(x))
+typeof(names(x))
+```
+
+b) Guess what the following will do, then check your answer. 
+
+    - names(x) <- c("AA", "BB", "CC")
+        - Renames the columns to those character strings. 
+        
+```{r}
+names(x) <- c("AA", "BB", "CC")
+x
+```
+
+***
+\pagebreak
+## 7.5: Filtering on Data Frames
+### Exercise 59:
+a) Write a command involving square brackets [ ] that returns just the rows of **warpbreaks** corresponding to observations made at the "M" level of tension.
+
+```{r}
+# Note: Head used to avoid bloating pdf even further.
+head(warpbreaks[warpbreaks$tension %in% "M", ])
+```
+
+b) Now write a command that uses subset() to do the same thing as in part a.
+
+```{r}
+head(subset(warpbreaks, subset = tension %in% "M"))
+```
+
+*** 
+\pagebreak
+# 8: Factors
+## Creating and Viewing Factors and Their Levels
+### Exercise 60:
+a) Write a command that uses factor() to convert the following "character" vector
+```{r}
+x.factor <- c("a", "a", "b", "b", "c", "c", "d", "d") %>%
+    as.factor()
+
+x.factor
+```
+
+b) After creating the factor **x.factor**, guess what the result of the following code will be.
+
+    - length(x.factor)
+        
+        - I *think* it would give us 8 as the length. 
+    
+```{r}
+length(x.factor)
+```
+
+c) Guess what the result of the following command will be, then check your answer.
+
+    - levels(x.factor)
+        
+        - Looking at the output of x.factor it gives us the levels so I would imagine this would return the same thing. **a b c d**
+        
+```{r}
+levels(x.factor)
+```
+
+d) Guess what the result of the following command will be.
+
+    - nlevels(x.factor)
+        
+        - Based on the factors it gave us, it seems that there are **4** of them.
+        
+```{r}
+nlevels(x.factor)
+```
+
+### Exercise 61:
+Guess the result of the following code:
+
+    - The code will probably return "a", "b", "c".
+    
+```{r}
+x.fac <- factor(c("a", "a", "a", "b", "b", "c"))
+levels(x.fac)
+```
+
+***
+\pagebreak
+# 9: Data Visualization With Base R
+## 9.1: Creating Plots
+### Exercise 62:
+Use plot() to make a scatterplot of the murder rates (y-axis) versus illiteracy rates (x-axis) of the state.x77 data set. 
+
+```{r, out.width="60%"}
+illit <- state.x77[, 3]
+murder <- state.x77[, 5]
+plot(x = illit, y = murder,
+     ylab = "Murder Rates",
+     xlab = "Illieracy Rates",
+     xlim = c(0, 3),
+     ylim = c(1, 16))
+```
+
+### Exercise 63:
+Given the vector:
+```{r}
+laughed <- c("Yes", "Yes", "Yes", "No", "Yes", "No", "Yes", "Yes", "Yes", "Yes", "No",
+"Yes", "Yes", "Yes", "No", "No", "Yes", "Yes", "Yes", "No", "Yes")
+```
+
+a) In words, what do the following commands do:
+
+    - my.tab <- table(laughed)
+    - my.tab
+        - Creates a table using the vector, creating two columns out of the number of Yes and No counts. 
+```{r}
+my.tab <- table(laughed)
+my.tab
+```
+
+b) Pass the *table* object my.tab to barplot() to make a bar plot of the counts. Report your R command.
+
+```{r, out.width="60%"}
+my.tab %>% barplot()
+```
+
+c) Pass the *table* object my.tab to pie() to make a pie chart of the counts.
+```{r, out.width="60%"}
+my.tab %>% pie()
+```
+
+***
+\pagebreak
+# 10: Objects and Classes
+### Exercise 64:
+Guess the class of each of the objects below.
+
+a) class(c("a", "b", "c"))
+    
+    - I would assume that this is a character vector. It's a vector of characters after all! 
+
+b) class(c(3, 6, 1))
+
+    - This would be a numeric vector by the same logic.
+
+c) class(list(3, 5, 2))
+
+    - I believe this is just a list.
+    
+```{r}
+c("a", "b", "c") %>%
+    class()
+
+c(3, 6, 1) %>%
+    class()
+
+list(3, 5, 2) %>%
+    class()
+```
+
+### Exercise 65:
+a) Guess the class of **sqrt()**, then check your answer. 
+
+    - I would assume this would have the class of *function*.
+
+```{r}
+sqrt %>% 
+    class()
+```
+
+b) Guess the result of the command **is.function(sqrt)**. 
+
+    - This should return TRUE
+    
+```{r}
+sqrt %>%
+    is.function()
+```
+
+c) Using the following function, **apply.fun()**, guess the result of the following commands.
+
+```{r, echo=FALSE}
+apply.fun <- function(x, FUN) {
+    do.call(FUN, arg = list(x))
+}
+```
+
+    - apply.fun(x = 4, FUN = sqrt)
+        
+        - This will take the square root of 4 and return 2.
+    
+    - apply.fun(x = -3, FUN = abs)
+    
+        - This will take the absolute value of -3 and return 3.
+
+```{r, echo=FALSE}
+glue::glue("
+           The output of apply.fun(x = 4, FUN = sqrt) is {apply.fun(x = 4, FUN = sqrt)}.
+           The output of apply.fun(x = -3, FUN = abs) is { apply.fun(x = -3, FUN = abs)}.
+           ")
+```
+
+### Exercise 66
+Using the below variables, guess the result of the following commands.
+```{r}
+x <- c("a", "b", "c")
+y <- factor(c("a", "b", "c"))
+```
+
+a) 
+
+    - class(x)
+    
+        - Based on previous exercises we know this returns "Character"
+        
+    - typeof(x)
+    
+        - Based on the available types I feel like this would *also* return character.
+
+b) 
+
+    - class(y)
+    
+        - This should return "factor"
+    
+    - typeof(y)
+    
+        - I think this would return "character"
+        
+```{r, echo=FALSE}
+glue::glue("
+    x has the class {class(x)} and is of type {typeof(x)}
+    y has the class {class(y)} and is of type {typeof(y)}
+")
+```
+
+***
+\pagebreak
+# 11: Generic Functions and Methods
+## 11.2: Methods
+### Exercise 67:
+a) Use methods() to look at **summary()**'s methods. Do the same for **data.frame** and **factor**.
+```{r}
+summary %>%
+     methods()
+
+data.frame %>%
+    methods()
+
+factor %>%
+    methods()
+```
+
+\pagebreak
+b) Try the following commands and describe the results.
+```{r}
+x <- data.frame(x1 = c(4, 3, 6),
+x2 = c(4, 7, 9),
+x3 = c(1, 1, 3))
+summary(x)
+
+y <- factor(c("a", "a", "b", "c", "c", "c", "c"))
+summary(y)
+```
+
+Summary for x works on each column individually. This results in separate summary statistics for x1, x2 and x3.
+The summary for y works a bit differently. It seems to have just counted up the number of each "a", "b" and "c". 
+
+c) Compare the results of the following commands to those in part (b). 
+```{r}
+summary.data.frame(x)
+summary.factor(y)
+```
+
+The output here is identical to part (b). This makes sense as we're essentially doing the same thing, we just skip the middle man by applying the correct method of summary directly. 
+
+***
+\pagebreak
+# 13: Some R Programming Features
+## 13.1: The Logical Operations "And", "Or", and "Not"
+### Exercise 68: 
+Guess the result of the following code.
+```{r, echo=FALSE}
+x <- 4
+y <- 7
+```
+
+a) x > 2 & y == 7
+
+    - TRUE (both conditions are met)
+
+b) x < 0 | y == 7
+
+    - TRUE (the right condition is met)
+
+c) !(x < 0)
+
+    - TRUE (x is NOT less than 0)
+
+```{r, echo=FALSE}
+glue::glue("
+           Is x > 2 AND is y == 7? {x > 2 & y == 7}
+           Is x < 0 OR is y == 7? {x < 0 | y == 7}
+           is x NOT less than 0? {!(x < 0)}
+           ")
+
+```
+
+### Exercise 69
+Guess the result of the following code:
+
+a) 10 < 20 | 15 < 16 & 9 == 10
+
+    - I have no clue this is impossible to read. I'm gonna go with false there has the be something that won't pass here.
+
+b) (10 < 20 | 15 < 16) & 9 == 10
+
+    - FALSE (the rightmost condition, 9 == 10 won't pass)
+
+c) 4 < 3 & (5 < 6 | 8 < 9)
+
+    - FALSE, 4 < 3 won't pass.
+
+d) (4 < 3 & 5 < 6) | 8 < 9
+
+    - TRUE
+    
+```{r}
+10 < 20 | 15 < 16 & 9 == 10
+(10 < 20 | 15 < 16) & 9 == 10
+4 < 3 & (5 < 6 | 8 < 9)
+(4 < 3 & 5 < 6) | 8 < 9
+```
+
+### Exercise 70
+Guess the result of the following code.
+
+a) c(FALSE, TRUE, FALSE) & c(TRUE, TRUE, FALSE)
+
+    - FALSE TRUE FALSE
+
+b) c(FALSE, TRUE, FALSE) | c(TRUE, TRUE, FALSE)
+
+    - TRUE TRUE FALSE
+
+c) !c(FALSE, TRUE, FALSE)
+
+    - TRUE FALSE TRUE
+    
+```{r}
+c(FALSE, TRUE, FALSE) & c(TRUE, TRUE, FALSE)
+
+c(FALSE, TRUE, FALSE) | c(TRUE, TRUE, FALSE)
+
+!c(FALSE, TRUE, FALSE)
+```
+
+### Exercise 71:
+Describe in words what the following command does:
+!is.na(x)
+
+This will check is a value ISNT an NA. So, if a value is, say, the integer 1 it will return TRUE for it. An NA will return false.
+
+### Exercise 72:
+Guess the result of the following commands given the vector:
+```{r}
+x <- c(1, 2, 6, 5)
+```
+
+a) !(x > 4)
+
+    - TRUE TRUE FALSE FALSE
+
+b) x > 4 & x < 6
+
+    - FALSE FALSE FALSE TRUE
+
+c) !(x > 4 & x < 6)
+
+    - TRUE TRUE TRUE FALSE
+
+d) x > 4 | x < 6
+
+    - TRUE TRUE TRUE TRUE
+    
+```{r}
+!(x > 4)
+x > 4 & x < 6
+!(x > 4 & x < 6)
+x > 4 | x < 6
+```
+
+***
+\pagebreak
+## 13.2: User-Defined Functions
+### Exercise 74
+
+Are the two functions the same?
+
+```{r}
+f1 <- function(x) {
+    y <- x + 1
+    return(y)
+}
+```
+
+```{r}
+f2 <- function(x) {
+    y <- x + 1
+    y
+}
+```
+
+Yes, these two functions are the same. R returns any value on its own before the closing brackets. This is purely a stylistic difference left to user preference.
+
+### Exercise 75:
+In the following code which is the *formal* argument which is the *actual* argument.
+
+g <- function(x) {
+    x^2 - 1
+}
+z <- 2
+g(x = z)
+
+    - **x** is the formal argument but **z** is the actual argument.
+    
+### Exercise 76:
+
+a) Write a function that takes two arguments and returns their relative difference. 
+
+\[\left|\frac{x-y}{y}\right|\]
+
+```{r}
+    relative_difference <- function(x, y) {
+        ret_val <- ((x - y) / y) |> 
+            abs()
+        
+        ret_val
+    }
+```
+
+b) What happens when y = 0? What happens when x = 0 AND y = 0?
+
+    - y = 0: 
+    
+        - Inf
+        
+    - x = 0 AND y = 0:
+    
+        - NaN
+        
+c) Rewrite your function so that it specifies a *default* value of 1 for y.
+
+```{r}
+    relative_difference <- function(x, y = 1) {
+        ret_val <- ((x - y) / y) |> 
+            abs()
+        
+        ret_val
+    }
+```
+
+### Exercise 77:
+Write a function that takes a vector argument **x** and returns a *list* containing the mean, median, standard deviation and range of **x**.
+
+```{r}
+summary_statistics <- function(vector) {
+    mean <- mean(vector)
+    median <- median(vector)
+    sd <- sd(vector)
+    range <- range(vector)
+    
+    list(mean, median, sd, range)
+}
+```
+
+###
+Exercise 78: 
+What do the ...'s mean when it says list(...) under usgae in lists help menu?
+
+That refers to the objects you're passing into the list function.
+
+### Exercise 79:
+a) Write a function that takes two vectors x and y and returns the maximum value in the two vectors combined.
+
+```{r}
+max_value <- function(vector_1, vector_2) {
+    max(vector_1, vector_2)
+}
+```
+
+b) Modify your function so that it uses ... to take a *variable number* of vectors as arguments and returns the maximum value in all the vectors combined.
+
+```{r}
+max_value <- function(...) {
+    max(c(...))
+}
+```

@@ -1,0 +1,267 @@
+---
+title: "Exercises 9"
+author: "Brady Lamson"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(ggplot2)
+```
+
+### Exercise 1
+
+```{r}
+paste("Today's date is", date())
+```
+
+```{r}
+paste("X", 1:5, sep = "")
+```
+
+***
+\pagebreak
+### Exercise 2
+
+```{r}
+# A
+
+first <- "Louis"
+middle <- "Daniel"
+last <- "Armstrong"
+
+paste(first, middle, last)
+```
+
+```{r}
+# B
+
+first <- c("Louis", "John", "Miles", "Ella")
+middle <- c("Daniel", "William", "Dewey", "Jane")
+last <- c("Armstrong", "Coltrane", "Davis", "Fitzgerald")
+
+paste(first, middle, last)
+```
+```{r}
+# C
+
+full <- "Sarah Lois Vaughan"
+
+strsplit(full, split = " ")
+```
+
+```{r}
+# D
+
+full <- c("Sarah Lois Vaughan", "Thelonious Sphere Monk", "Chet Henry Baker",
+"Wynton Learson Marsalis")
+
+strsplit(full, split = " ")
+```
+
+***
+\pagebreak
+### Exercise 3
+
+```{r}
+quote <- "Aunt Petunia was horse-faced and bony; Dudley was blond, pink, and
+porky. Harry, on the other hand, was small and skinny, with brilliant green
+eyes and jet-black hair that was always untidy. He wore round glasses, and on
+his forehead was a thin, lightning-shaped scar."
+
+quote <- 
+    quote %>%
+    gsub(pattern = "\n", replacement = " ") %>%
+    gsub(pattern = "[\\.,;]", replacement = "")
+
+quote
+```
+
+```{r}
+gregexpr(pattern = "-", text = quote)
+```
+The three values returned represent the indices where dashes appear. That is, the 23rd character, the 149th character and the 246th character. 
+
+```{r}
+regexpr(pattern = "-", text = quote)
+```
+
+This represents the index of the first instance of a dash appearing in the character string.
+
+***
+\pagebreak
+### Exercise 4
+
+```{r}
+# A
+
+badges <- 
+    "Badges? We ain't got no badges. We don't need no badges. I don't have to
+show you any stinking badges!" %>%
+    gsub(pattern = "\n", replacement = " ") %>%
+    tolower()
+
+badges
+```
+
+```{r}
+# B
+
+badges <-
+    badges %>%
+    gsub(pattern = "!", replacement = "")
+
+badges
+```
+
+```{r}
+# C
+
+badges <-
+    badges %>%
+    gsub(pattern = "[\\?,\\.]", replacement = "")
+
+badges
+```
+
+```{r}
+# D
+
+badges <-
+    badges %>%
+    strsplit(split = " ")
+
+badges
+```
+
+```{r}
+# E
+
+badges <- 
+    badges %>%
+    unlist()
+```
+
+```{r}
+badges %>%
+    grep(pattern = "badges")
+
+badges %>%
+    grepl(pattern = "badges")
+```
+
+```{r}
+# F
+
+badges %>%
+    nchar()
+```
+
+***
+\pagebreak
+### Exercise 5
+
+```{r}
+# A / B
+
+quote <- 
+    "I have a dream that one day this nation will rise up and live out
+the true meaning of its creed, 'We hold these truths to be self-evident,
+that all men are created equal.' I have a dream that one day on the
+red hills of Georgia, sons of former slaves and the sons of former
+slave owners will be able to sit down together at the table of
+brotherhood. I have a dream that one day even the state of Mississippi,
+a state sweltering with the heat of injustice, sweltering with the
+heat of oppression, will be transformed into an oasis of freedom and
+justice. I have a dream that my four little children will one day live
+in a nation where they will not be judged by the color of their skin
+but by the content of their character." %>%
+    gsub(pattern = "\n", replacement = " ") %>%
+    gsub(pattern = "[\\.,']", replacement = " ") %>%
+    strsplit(split = " ") %>%
+    unlist()
+```
+
+```{r}
+q_nchars <- nchar(quote)
+```
+
+```{r}
+# C
+
+mean(q_nchars)
+```
+
+```{r}
+# D
+
+ggplot(data = data.frame(n = q_nchars)) +
+    geom_histogram(mapping = aes(x = n), fill = "blue", color = "black", binwidth = 1)
+```
+
+This histogram is absolutely right-skewed. 
+
+***
+\pagebreak
+### Exercise 6
+
+```{r}
+quote <- "I have a dream that one day this nation will rise up and live out
+the true meaning of its creed, 'We hold these truths to be self-evident,
+that all men are created equal.' I have a dream that one day on the
+red hills of Georgia, sons of former slaves and the sons of former
+slave owners will be able to sit down together at the table of
+brotherhood. I have a dream that one day even the state of Mississippi,
+a state sweltering with the heat of injustice, sweltering with the
+heat of oppression, will be transformed into an oasis of freedom and
+justice. I have a dream that my four little children will one day live
+in a nation where they will not be judged by the color of their skin
+but by the content of their character." %>%
+    gsub(pattern = "\n", replacement = " ") %>%
+    gsub(pattern = "[\\.,']", replacement = "")
+```
+
+```{r}
+#A 
+
+quote %>%
+    gregexpr(pattern = "freedom")
+```
+
+The starting character position of "freedom" is index 534. 
+
+```{r}
+# B
+
+quote.list <- strsplit(quote, split = " ")
+quote.vec <- unlist(quote.list)    # Could also use quote.vec <- quote.list[[1]]
+quote.vec
+```
+
+This returns everything separated by spaces, which gives us every single individual word as a separate string in a vector.
+
+```{r}
+# C
+
+grep(pattern = "the", x = quote.vec)
+
+which(quote.vec == "the")
+```
+
+`grep()` simply looks for the letters "the" in each string, the word itself doesn't need to be "the" exactly. The `which()` command is different though, it only returns the indices for the word "the".
+
+```{r}
+# D
+
+grep(pattern = "ing$", x = quote.vec, value = TRUE)
+```
+
+This checks for strings ending in "ing" specifically. 
+
+```{r}
+grep(pattern = "^th", x = quote.vec, value = TRUE)
+```
+
+This is the `$` equivalent for the beginning of a string. So this finds all strings that start with "th". 

@@ -1,0 +1,251 @@
+---
+title: "Homework 4"
+author: "Brady Lamson"
+date: "2/26/2022"
+output: 
+    pdf_document:            
+        dev: png
+        includes:
+            in_header: "/home/brady/repos/mth_3270_data_science/module_4/preamble.tex"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(stringr)
+library(lubridate)
+```
+
+# Problem 1
+Use filter() with the flights data from the "nycflights13" package to find all the flights that:
+
+a) Arrived more than 2 hours late but didn't leave late.
+
+b) Were delayed by at least an hour, but made up over 30 minutes during flight.
+
+```{r}
+flight_data <- nycflights13::flights
+```
+
+```{r}
+# A 
+
+flight_data %>%
+    dplyr::filter(
+        arr_delay > 120 & dep_delay <= 0
+    )
+```
+
+\pagebreak
+
+```{r}
+# B
+
+flight_data %>%
+    dplyr::filter(
+        dep_delay > 60 & (dep_delay - arr_delay) > 30
+    )
+```
+
+\pagebreak
+
+# Problem 2
+Use arrange() to sort the flights data to:
+
+a) Find the fastest flights.
+
+b) Find the longest flights.
+
+```{r}
+# A
+
+flight_data %>%
+    dplyr::arrange(
+        air_time
+    ) %>%
+    dplyr::select(
+        flight, air_time, distance
+    ) %>%
+    head()
+```
+
+```{r}
+# B
+# Longest in terms of distance
+flight_data %>%
+    dplyr::arrange(
+        dplyr::desc(distance)
+    ) %>%
+    dplyr::select(
+        flight, air_time, distance, origin, dest
+    ) %>%
+    head()
+```
+
+\pagebreak
+
+```{r}
+# B
+# Longest in terms of air_time
+
+flight_data %>%
+    dplyr::arrange(
+        dplyr::desc(air_time)
+    ) %>%
+    dplyr::select(
+        flight, air_time, distance, origin, dest
+    ) %>%
+    head()
+```
+
+***
+\pagebreak
+# Problem 3
+
+```{r}
+school <- read.table("nels88.txt", header = TRUE, stringsAsFactors = FALSE) %>% 
+    as_tibble()
+```
+
+a) Use filter() to extract a subset of the rows of the school data set.
+
+```{r}
+# Filter out only the students with a bymath score above the mean and 
+# arrange them in descending order.
+school %>%
+    dplyr::filter(
+        bymath > mean(school$bymath, na.rm = TRUE)
+    ) %>%
+    dplyr::arrange(
+        dplyr::desc(bymath)
+    ) %>%
+    dplyr::select(
+        bymath, f1math, f2math
+    )
+```
+
+b) Use summarize to compute a summary statistic for each of at least three variables.
+
+```{r}
+school %>%
+    dplyr::summarise(
+        bymath_mean = mean(bymath, na.rm = TRUE),
+        f1math_max = max(f1math, na.rm = TRUE),
+        f2math_min = min(f2math, na.rm = TRUE),
+        proportion_hispanic = sum(hispanic, na.rm = TRUE) / nrow(school)
+    )
+```
+
+\pagebreak
+
+c) Use mutate() or transmute() to compute at least one new variable for the data set.
+
+```{r}
+# Compute an average score for each student, 
+# then organize in descending order by that average.
+
+school %>%
+    dplyr::rowwise() %>%
+    dplyr::mutate(
+        avg_score = mean(c(bymath, f1math, f2math), na.rm = TRUE)
+    ) %>%
+    dplyr::select(
+        bymath, f1math, f2math, avg_score
+    ) %>%
+    dplyr::arrange(
+        dplyr::desc(avg_score)
+    )
+```
+
+***
+\pagebreak
+
+# Problem 6 (Book)
+
+Each of these tasks can be performed using a single data verb. Say what that verb is.
+
+a) Find the average of one of the variables.
+
+    - summarize
+    
+b) Add a new column that is the ratio between two variables.
+
+    - mutate
+
+c) Sort the cases in descending order of a variable.
+
+    - arrange
+
+d) Create a new data table that includes only those cases that meet a criterion.
+
+    - filter
+
+e) From a data table with three categorical variables A, B, and C, and a quantitative variable X, produce a data frame that has the same cases but only the variables A and X.
+
+    - select
+    
+***
+\pagebreak
+# Problem 9 (Book)
+
+In the flights data set hat month had the highest proportion of cancelled flights? What month had the lowest? 
+
+```{r}
+# We can make the assumption that an NA value for arrival time
+# represents a cancelled flight. Using this we can narrow things down.
+
+cancel_percentage <- flight_data %>%
+    dplyr::group_by(
+        month
+    ) %>%
+    dplyr::summarise(
+        cancel_percent = (sum(is.na(arr_time)) / n() * 100) %>% round(digits = 3) 
+    ) %>%
+    dplyr::mutate(
+        month = lubridate::month(month, label = TRUE)
+    )
+
+most_cancels <- cancel_percentage %>%
+    dplyr::slice(which.max(cancel_percent))
+
+least_cancels <- cancel_percentage %>%
+    dplyr::slice(which.min(cancel_percent))
+
+dplyr::full_join(
+    most_cancels, least_cancels
+)
+```
+
+***
+\pagebreak
+# Problem 14 (Book)
+Use the nycflights13 package and the flights data frame to answer the following question: 
+
+What plane (specified by the tailnum variable) traveled the most times from New York City airports in 2013? Plot the number of trips per week over the year.
+
+```{r}
+flight_data %>%
+    dplyr::group_by(tailnum) %>%
+    dplyr::summarise(
+        freq = n()
+    ) %>%
+    stats::na.omit() %>%
+    dplyr::slice(
+        which.max(freq)
+    )
+```
+
+From this we know that tailnum N725MQ is the highest frequency plane on this data set. Since this data set only accounts for flights with an origin of NYC airports (others are considered NA) and it already only accounts for flights in 2013, we can simply check the frequency of each tail number to get us where we need to go. From here we need to pull out relevant information related to this tail number so we can plot its flight patterns.
+
+```{r, out.width="50%"}
+weekly_frequency <- flight_data %>%
+    dplyr::filter(tailnum == "N725MQ") %>%
+    dplyr::group_by(week = lubridate::week(time_hour)) %>%
+    dplyr::summarise(
+        freq = n()
+    )
+
+ggplot2::ggplot(weekly_frequency, ggplot2::aes(x = week, y = freq)) +
+    ggplot2::geom_line()
+```
+

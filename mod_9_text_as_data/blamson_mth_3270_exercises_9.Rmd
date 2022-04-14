@@ -362,10 +362,16 @@ The above is actually wrong, based on what I learned in the lecture it seems tha
 ### Exercise 9
 
 ```{r}
-sotu.wrd.vec <- scan('state_of_the_union.txt',
-                     what = "",
-                     blank.lines.skip = TRUE)
+# sotu.wrd.vec <- scan('state_of_the_union.txt',
+#                      what = "",
+#                      blank.lines.skip = TRUE)
+
+sotu.wrd.vec <-
+  readr::read_file("state_of_the_union.txt") %>%
+  stringr::str_squish() %>%
+  stringr::str_split(pattern = " ")
 ```
+
 ```{r}
 # This creates a single "character" string (one-element vector) containing all speeches.
 sotu.string <- paste(sotu.wrd.vec, collapse = " ")

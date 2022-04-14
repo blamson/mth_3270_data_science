@@ -265,3 +265,145 @@ grep(pattern = "^th", x = quote.vec, value = TRUE)
 ```
 
 This is the `$` equivalent for the beginning of a string. So this finds all strings that start with "th". 
+
+***
+\pagebreak
+### Exercise 7
+
+```{r}
+county1 <- 
+    c("De Witt County", "Lac qui Parle County", "Lewis and Clark County",
+      "St John the Baptist Parish")
+
+county2 <- 
+    c("De Witt County", "Lac qui Parle County", "Lewis and Clark County",
+      "St. John the Baptist Parish")
+
+county3 <- 
+    c("De Witt", "Lac Qui Parle", "Lewis & Clark", "St. John the Baptist")
+```
+
+```{r}
+# A and B
+
+# Extra whitespace added to "county" to capture the whitespace before it. 
+county1_new <- 
+    county1 %>%
+    gsub(pattern = " County", replacement = "") %>%
+    gsub(pattern = " Parish", replacement = "")
+county1_new
+
+county2_new <-
+    county2 %>%
+    gsub(pattern = " County", replacement = "") %>%
+    gsub(pattern = " Parish", replacement = "")
+county2_new
+```
+
+```{r}
+# C
+substr(x = county1, start = 1, stop = nchar(county1) - 7)
+substr(x = county2, start = 1, stop = nchar(county2) - 7)
+```
+
+```{r}
+# D
+
+gsub(pattern = " County| Parish", replacement = "", x = county1)
+gsub(pattern = " County| Parish", replacement = "", x = county2)
+```
+
+```{r}
+# E
+
+gsub(pattern = " County|Parish", replacement = "", x = county1)
+gsub(pattern = " County|Parish", replacement = "", x = county2)
+```
+
+This fails to capture the whitespace before Parish. 
+
+```{r}
+# F
+
+gsub(pattern = ".", replacement = "", x = county2)
+gsub(pattern = ".", replacement = "", x = county3)
+```
+The period just means "anything" essentially, if we want to remove periods we need to either escape the character or set `fixed = TRUE`
+
+```{r}
+# G
+
+gsub(pattern = "\\.", replacement = "", x = county2)
+gsub(pattern = "\\.", replacement = "", x = county3)
+```
+
+```{r}
+# I
+
+gsub(pattern = ".", replacement = "", x = county2, fixed = TRUE)
+gsub(pattern = ".", replacement = "", x = county3, fixed = TRUE)
+```
+
+
+***
+\pagebreak
+### Exercise 8
+```{r}
+my.string <- "<p> This is a short paragraph.</p>"
+
+gregexpr(pattern = "<.*>", text = my.string)
+```
+
+This is capturing the pattern "<.>", essentially, the backslash in the second instance of the pattern takes the place of the p, and since theres another character inside of those brackets it doesn't consider this a pattern.
+
+The above is actually wrong, based on what I learned in the lecture it seems that this returns the entire string. Since the `.*` allows for any number of characters, it just seems everything on the outside. 
+***
+\pagebreak
+### Exercise 9
+
+```{r}
+sotu.wrd.vec <- scan('state_of_the_union.txt',
+                     what = "",
+                     blank.lines.skip = TRUE)
+```
+```{r}
+# This creates a single "character" string (one-element vector) containing all speeches.
+sotu.string <- paste(sotu.wrd.vec, collapse = " ")
+
+# This splits sotu.string into separate speeches (demarcated by ***):
+sotu.list <- strsplit(sotu.string, split = "\\*\\*\\*")
+
+# This converts the one-element sotu.list to a vector:
+sotu.spch.vec <- unlist(sotu.list)
+
+# Could also use sotu.spch.vec <- sotu.list[[1]]
+
+# This removes the empty first element:
+sotu.spch.vec <- sotu.spch.vec[-1]
+```
+
+```{r}
+library(tm)
+
+# Create a "VectorSource" class object:
+sotu.vecsrc <- VectorSource(sotu.spch.vec)
+
+# Convert to a "Corpus" class object:
+sotu.corp <- VCorpus(sotu.vecsrc)
+```
+
+```{r}
+# This cleans the speeches:
+sotu.corp <- 
+    sotu.corp %>%
+    tm_map(FUN = stripWhitespace) %>%
+    tm_map(FUN = removeNumbers) %>%
+    tm_map(FUN = removePunctuation) %>%
+    tm_map(FUN = content_transformer(tolower)) %>%
+    tm_map(FUN = removeWords, stopwords("english"))
+```
+
+```{r}
+dtm <- DocumentTermMatrix(sotu.corp)
+```
+

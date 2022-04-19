@@ -1,0 +1,370 @@
+---
+title: "Querying Using SQL"
+author: "Brady Lamson"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(DBI)
+library(RMySQL)
+library(dplyr)
+```
+
+# Exercise 1
+
+```{r}
+db_con <-
+    DBI::dbConnect(
+        drv = MySQL(),
+        dbname = "airlines",
+        host = "mdsr.cdc7tgkkqd0n.us-east-1.rds.amazonaws.com",
+        user = "mdsr_public",
+        password = "ImhsmflMDSwR"
+    )
+```
+
+```{r}
+# A
+
+db_con %>% class()
+```
+
+The class is a MySQLConnection.
+
+```{r}
+# B
+
+DBI::dbListTables(db_con)
+```
+
+There are four separate tables in the database.
+
+```{r}
+# C
+
+# Described the contents of the airports table:
+dbGetQuery(
+    conn = db_con,
+    statement = "DESCRIBE airports;"
+) %>%
+    nrow()
+```
+
+There are 9 fields in airports.
+
+```{r}
+# D
+
+# Described the contents of the flights table:
+dbGetQuery(
+    conn = db_con,
+    statement = "DESCRIBE flights;"
+) %>%
+    nrow()
+```
+
+There are 21 fields in flights.
+
+***
+# Exercise 2
+
+```{r}
+DBI::dbGetQuery(
+    conn = db_con,
+    statement = "SELECT carrier, tailnum 
+                FROM flights
+                LIMIT 0,5;"
+)
+```
+
+***
+\pagebreak
+# Exercise 3
+
+```{r}
+# A
+
+my_carriers <-
+    DBI::dbGetQuery(
+    conn = db_con,
+    statement = "
+        SELECT *
+        FROM carriers;
+    "
+)
+
+my_carriers %>% is.data.frame()
+```
+
+Cool thing I learned passively googling is that you can just do SQL queries directly in a separate code chunk if you specify sql as the language and provide it the connection we created earlier. The output is a table that is very easy on the eyes. 
+
+```{sql connection=db_con}
+# Using SQL directly
+
+SELECT * FROM carriers
+```
+
+```{r}
+# B
+
+my_carriers %>%
+    object.size() %>%
+    print(units = "Kb")
+```
+
+`my_carries` is approximately 235 kilobytes large.
+
+\pagebreak
+# Exercise 4
+
+```{r}
+my_airports <-
+    DBI::dbGetQuery(
+    conn = db_con,
+    statement = "
+        SELECT *
+        FROM airports;
+    "
+)
+```
+
+```{r}
+# A and B
+
+glue::glue("The airports data set has 
+           {my_airports %>% nrow()} rows and {my_airports %>% ncol()} columns.")
+```
+
+***
+\pagebreak
+# Exercise 5
+
+```{r}
+DBI::dbGetQuery(
+    conn = db_con,
+    statement = "
+        SELECT distance / air_time * 60 AS trvl_speed
+        FROM flights
+        LIMIT 0,5;
+    "
+)
+```
+
+```{sql connection=db_con}
+# Using SQL directly
+
+SELECT distance / air_time * 60 AS trvl_speed
+FROM flights
+LIMIT 5
+```
+
+***
+\pagebreak
+# Exercise 6
+
+```{r}
+# A
+
+DBI::dbGetQuery(
+    conn = db_con,
+    statement = "
+        SELECT *
+        FROM flights
+        WHERE arr_delay > 120
+        LIMIT 0,5;
+    "
+)
+```
+
+```{r}
+# B
+
+DBI::dbGetQuery(
+    conn = db_con,
+    statement = "
+        SELECT year, month, day, dest
+        FROM flights
+        WHERE dest IN ('IAH', 'HOU')
+        LIMIT 0,5;
+    "
+)
+```
+
+```{r}
+# C
+
+DBI::dbGetQuery(
+    conn = db_con,
+    statement = "
+        SELECT dep_time, dep_delay, arr_delay, carrier
+        FROM flights
+        WHERE carrier IN ('UA', 'AA', 'DL')
+        LIMIT 0,5;
+    "
+)
+```
+
+For fun I'll just use SQL directly on parts d, e and f.
+
+```{sql connection=db_con}
+# D
+
+SELECT year, month, day
+FROM flights
+WHERE month BETWEEN 7 and 9 AND year = 2013
+LIMIT 0,5;
+```
+
+```{sql connection=db_con}
+# E
+
+SELECT dep_time, arr_time
+FROM flights
+WHERE dep_time = 2400 OR dep_time BETWEEN 0 and 600 AND year = 2013
+LIMIT 0,5;
+```
+
+```{sql connection=db_con}
+# F
+
+SELECT carrier, month, arr_delay
+FROM flights
+WHERE carrier = 'UA' AND month = 7 AND arr_delay > 120 AND year = 2013
+LIMIT 0,5;
+```
+
+***
+\pagebreak
+# Exercise 7
+
+```{r}
+# A
+
+DBI::dbGetQuery(
+    conn = db_con,
+    statement = "
+        SELECT carrier, MIN(dep_delay) AS minimum_delay
+        FROM flights
+        WHERE year = 2013 AND month = 6 AND day = 26
+        GROUP BY carrier
+        LIMIT 0,5;
+    "
+)
+```
+
+```{r}
+# B
+
+DBI::dbGetQuery(
+    conn = db_con,
+    statement = "
+        SELECT carrier, MIN(dep_delay) AS minimum_delay, MAX(dep_delay) AS maximum_delay
+        FROM flights
+        WHERE year = 2013 AND month = 6 AND day = 26
+        GROUP BY carrier
+        LIMIT 0,5;
+    "
+)
+```
+
+***
+\pagebreak
+# Exercise 8
+
+```{r, eval = FALSE}
+dbGetQuery(
+    conn = db_con,
+    statement = "SELECT carrier, dest, AVG(arr_delay) AS meanArrDelay
+                FROM flights
+                WHERE year = 2013 AND month = 6 AND day = 26 AND origin = 'BDL'
+                GROUP BY dest;"
+)
+```
+
+This selects the carrier and destination columns unchanged. It also creates a new column for the AVERAGE arrival delay for each destination. This selection only occurs on June 26th, 2013 where the origin of the flight was BDL. 
+
+```{r, eval = FALSE}
+dbGetQuery(
+    conn = db_con,
+    statement = "SELECT carrier, dest, AVG(arr_delay) AS meanArrDelay,
+                AVG(distance) AS meanDist
+                FROM flights
+                WHERE year = 2013 AND month = 6 AND day = 26 AND origin = 'BDL'
+                GROUP BY dest;"
+)
+```
+
+This is the same as the previous example, but instead we also calculate the average distance for each destination. 
+
+***
+\pagebreak
+# Exercise 9
+
+```{r}
+# A
+
+dbGetQuery(
+    conn = db_con,
+    statement = "SELECT dest, AVG(air_time) AS avg_travel_time
+                FROM flights
+                WHERE year = 2013 AND origin = 'BDL'
+                GROUP BY dest
+                ORDER BY avg_travel_time ASC
+                LIMIT 0,5;"
+)
+```
+
+EWR was the shortest. 
+
+```{r}
+# B
+
+dbGetQuery(
+    conn = db_con,
+    statement = "SELECT dest, AVG(air_time) AS avg_travel_time
+                FROM flights
+                WHERE year = 2013 AND origin = 'BDL'
+                GROUP BY dest
+                ORDER BY avg_travel_time DESC
+                LIMIT 0,5;"
+)
+```
+
+LAX was the longest average travel time.
+
+***
+# Exercise 10
+
+```{r}
+# A
+
+dbGetQuery(
+    conn = db_con,
+    statement = "SELECT dest, COUNT(*) AS num_flights
+                FROM flights
+                WHERE year = 2013 AND origin = 'BDL'
+                GROUP BY dest
+                ORDER BY num_flights DESC
+                LIMIT 0,5;"
+)
+```
+
+ORD had the most flights.
+
+```{r}
+# B
+
+dbGetQuery(
+    conn = db_con,
+    statement = "SELECT tailnum, COUNT(*) AS num_flights
+                FROM flights
+                WHERE year = 2013 AND origin = 'BDL'
+                GROUP BY tailnum
+                ORDER BY num_flights DESC
+                LIMIT 0,5;"
+)
+```
+
+Tailnumber `N128UW` had the most flights.

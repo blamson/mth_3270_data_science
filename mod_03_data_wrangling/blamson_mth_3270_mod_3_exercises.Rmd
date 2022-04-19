@@ -1,0 +1,617 @@
+---
+title: "Data Science Module 3 Exercises"
+author: "Brady Lamson"
+date: "2/16/2022"
+output:
+    pdf_document:
+        dev: png
+        includes:
+            in_header: "preamble.tex"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+    echo = TRUE,
+    out.width = "70%"
+    )
+library(dplyr)
+library(ggplot2)
+library(nycflights13)
+```
+
+# 4: Data Wrangling
+## 4.2: 
+Extracting Columns with select()
+
+### Exercise 1
+a) This will pull only the years and days from the flights data set.
+
+b) This pulls all the columns between year and day, inclusive.
+
+c) This pulls all columns *except* year and day.
+
+***
+
+### Exercise 2:
+a) This will pull all column names starting with "sched", of which there are 2 columns in this data set. (sched_dep_time and sched_arr_time)
+
+b) Same as (a) but with columns starting with "arr" (arr_time and arr_delay).
+
+c) Pulls all columns starting either with "dep_" or "arr_".
+
+***
+
+\pagebreak
+## 4.4: Filtering Rows with filter()
+### Exercise 3:
+
+```{r, results='hide'}
+# A
+dplyr::filter(flights, arr_delay >= 120)
+```
+
+```{r, results='hide'}
+# B 
+flights %>%
+    dplyr::filter(dest %in% c("IAH", "HOU"))
+```
+
+```{r, results='hide'}
+# C
+flights %>%
+    dplyr::filter(carrier %in% c("UA", "AA", "DL"))
+```
+
+```{r, results='hide'}
+# D
+flights %>%
+    dplyr::filter(month %in% 7:9)
+```
+
+```{r, results='hide'}
+# E
+flights %>%
+    dplyr::filter(dep_time %in% 0:600)
+```
+
+```{r, results='hide'}
+# F
+flights %>%
+    dplyr::filter(
+        carrier == "UA", 
+        month == 7, 
+        arr_delay >= 120
+    )
+```
+
+***
+\pagebreak
+## 4.5: Arranging Rows with arrange()
+### Exercise 4:
+
+```{r, results='hide'}
+# A
+flights %>%
+    dplyr::arrange(dep_delay, arr_delay)
+```
+
+```{r, results='hide'}
+# B
+flights %>%
+    dplyr::arrange(
+        dplyr::desc(dep_delay),
+        dplyr::desc(arr_delay)
+    )
+```
+
+```{r, results='hide'}
+# C
+flights %>%
+    dplyr::arrange(dep_time)
+```
+
+```{r, results='hide'}
+# D
+flights %>%
+    dplyr::arrange(dplyr::desc(dep_time))
+```
+
+```{r, results='hide'}
+# E
+flights %>%
+    dplyr::arrange(distance)
+```
+
+```{r, results='hide'}
+# F
+flights %>%
+    dplyr::arrange(dplyr::desc(distance))
+```
+
+***
+\pagebreak
+### Exercise 5:
+
+```{r}
+x <- data.frame(x1 = c(2, 1, NA, 8, 7, 5, 4),
+x2 = c("a", NA, "c", "d", "c", "a", "d"),
+stringsAsFactors = FALSE)
+```
+
+
+The following code will sort the data with NAs at the top of the *first* column.
+
+```{r}
+x %>%
+    dplyr::arrange(is.na(x1))
+```
+
+
+The following code will sort the data with NAs at the bottom of the *first* column.
+
+```{r}
+x %>%
+    dplyr::arrange(
+        dplyr::desc(is.na(x1))
+    )
+```
+
+***
+\pagebreak
+## 4.6: Create New Variables (Columns) with mutate()
+### Exercise 6:
+
+```{r, results='hide'}
+flights %>%
+    dplyr::mutate(travel_time = arr_time - dep_time)
+```
+
+The arrival and departure time use totally different units than air time. The former are units of time, so 600 is 6:00am, whereas with air time 600 would be 600 minutes. They aren't equivalent. 
+
+***
+### Exercise 7:
+```{r}
+flights_small <- select(
+    .data = flights, 
+    year:day, 
+    ends_with("delay"), 
+    distance,
+    air_time)
+```
+
+```{r}
+dplyr::mutate(
+    .data = flights_small,
+    gain = dep_delay - arr_delay,
+    hours = air_time / 60,
+    gain_per_hour = gain / hours
+    )
+```
+
+The variable gain_per_hour does get computed! 
+
+***
+\pagebreak
+## 4.7: Renaming Variables (Columns) with rename()
+### Exercise 8:
+
+```{r}
+z <- data.frame(
+    z1 = c(5, 4, 3),
+    z2 = c("a", "c", "b"),
+    z3 = c(14, 22, 13))
+```
+
+```{r}
+z %>%
+    dplyr::rename(
+        new_z1 = z1,
+        new_z2 = z2,
+        new_z3 = z3
+    )
+```
+
+***
+\pagebreak
+## 4.8: Summarize Data with summarize()
+
+```{r}
+not_cancelled <- filter(.data = flights, !is.na(dep_delay), !is.na(arr_delay))
+```
+
+### Exercise 9:
+
+```{r}
+#A
+
+not_cancelled %>%
+    dplyr::summarise(
+        median_dep_delay = median(dep_delay),
+        median_arr_delay = median(arr_delay)
+    )
+```
+
+```{r}
+# B
+not_cancelled %>%
+    dplyr::summarise(
+        max_dep_delay = max(dep_delay),
+        max_arr_delay = max(arr_delay)
+    )
+```
+
+```{r}
+not_cancelled %>%
+    dplyr::summarise(
+        shortest_dep_delay = min(dep_delay),
+        shortest_arr_delay = min(arr_delay)
+    )
+```
+
+***
+\pagebreak
+### Exercise 10:
+a) The following code will give you the total count of rows in the data set. 
+
+```{r}
+summarize(.data = not_cancelled,
+          total_flights = n())
+```
+
+
+b) This counts the *number* of flights that have a delay of an hour or more. 
+
+```{r}
+summarize(.data = not_cancelled,
+          hour_arr_delay_total = sum(arr_delay > 60))
+```
+
+
+c) This returns the ratio of flights with a delay of an hour or more compared to the total number of flights in the data set.
+
+```{r}
+summarize(.data = not_cancelled,
+          hour_arr_delay_proportion = sum(arr_delay > 60) / n())
+```
+
+***
+\pagebreak
+## 4.9: Applying summarize() to Groups using group_by()
+### Exercise 11:
+
+```{r}
+# A
+
+by_dest <- group_by(.data = flights, dest)
+
+delay_by_dest <- summarize(
+    .data = by_dest, 
+    mean_arr_delay = mean(arr_delay, na.rm = TRUE)
+    )
+```
+
+delay_by_dest gives a breakdown of the average delay by the location of travel.
+
+```{r}
+# B
+by_dest <- group_by(.data = flights, dest)
+
+delay_dist_by_dest <- summarize(
+    .data = by_dest,
+    mean_dist = mean(distance, na.rm = TRUE),
+    mean_arr_delay = mean(arr_delay, na.rm = TRUE)
+)
+```
+
+***
+\pagebreak
+### Exercise 12:
+```{r}
+resp <- c(23, 11, 14, 16, 19, 26, 24, 29, 31, 28, 34, 25)
+trt <- c(rep("Ctrl", 4), rep("TrtA", 4), rep("TrtB", 4))
+age <- c(33, 45, 30, 24, 22, 31, 39, 40, 29, 19, 27, 25)
+gndr <- c("m", "m", "f", "f", "m", "f", "f", "m", "f", "m", "f", "m")
+
+ExpData <- data.frame(TrtGrp = trt,
+                      SubjectGender = gndr,
+                      SubjectAge = age,
+                      Response = resp, stringsAsFactors = FALSE)
+```
+
+```{r}
+# A
+
+by_TrtGrp <- group_by(.data = ExpData, TrtGrp)
+summarize(.data = by_TrtGrp, Count = n())
+```
+
+This command presents the total count of each treatment group. So we have 4 observations in the control group, 4 in treatment A and 4 in treatment B. 
+
+```{r}
+# B
+
+dplyr::summarize(.data = by_TrtGrp, mean = base::mean(Response))
+```
+
+```{r}
+# C
+
+dplyr::summarise(
+    by_TrtGrp, 
+    mean_response = base::mean(Response), 
+    mean_subject_age = base::mean(SubjectAge)
+)
+```
+
+### Exercise 13:
+
+```{r}
+# A
+
+plane_count <- flights %>%
+    dplyr::group_by(tailnum) %>%
+    dplyr::summarise(count = n()) %>%
+    dplyr::arrange(dplyr::desc(count)) %>%
+    stats::na.omit()
+
+glue::glue("
+    The tail number with the most flights is {plane_count[1,1]}.
+")
+```
+
+```{r}
+# B
+
+dest_count <- flights %>%
+    dplyr::group_by(dest) %>%
+    dplyr::summarise(count = n()) %>%
+    dplyr::arrange(dplyr::desc(count)) %>%
+    stats::na.omit()
+
+glue::glue("
+    The destination visited the most times was {dest_count[1,1]}.
+")
+```
+
+***
+\pagebreak
+## 4.10: Chaining Together Actions Using the Pipe Operator %>%
+### Exercise 14:
+```{r}
+# A
+
+x <- c(2, 5, 4, 3, 7, 9)
+# x %>% mean()
+```
+
+The above command takes the mean of the vector x. It's equivalent to mean(x)
+
+```{r}
+# B
+
+# x %>% mean() %>% sqrt() %>% round(digits = 2)
+```
+
+Take the mean of x, then the square root, and then round that output to 2 digits. 
+
+c) Rewrite the command below. 
+
+```{r}
+mean_x <- mean(x)
+sqrt_mean_x <- sqrt(mean_x)
+round_sqrt_mean_x <- round(sqrt_mean_x, digits = 2)
+```
+
+```{r}
+x %>%
+    mean() %>%
+    sqrt() %>%
+    round(digits = 2)
+```
+d) Rewrite the command below.
+
+```{r}
+round(sqrt(mean(x)), digits = 2)
+```
+
+```{r}
+x %>%
+    mean() %>%
+    sqrt() %>%
+    round(digits = 2)
+```
+
+***
+\pagebreak
+### Exercise 15
+
+Rewrite the given commands using pipes. 
+
+```{r}
+# A
+
+flights %>%
+    dplyr::select(arr_delay) %>%
+    head()
+```
+
+```{r}
+# B
+
+flights %>%
+    dplyr::select(dest, arr_delay) %>%
+    head()
+```
+
+```{r}
+# C
+
+flights %>%
+    dplyr::select(dest, arr_delay) %>%
+    dplyr::filter(dest %in% c("SEA", "DEN")) %>%
+    head()
+```
+
+```{r}
+# D
+
+flights %>%
+    dplyr::select(dest, arr_delay) %>%
+    dplyr::filter(dest %in% c("SEA", "DEN")) %>%
+    dplyr::group_by(dest) %>%
+    dplyr::summarise(mean_arr_delay = mean(arr_delay, na.rm = TRUE)) %>%
+    head()
+```
+
+***
+### Exercise 16:
+Rewrite the following command using pipes.
+
+```{r}
+flights %>%
+    dplyr::filter(dest == "DEN") %>%
+    dplyr::summarise(
+        mean_dep_delay = mean(dep_delay, na.rm = TRUE),
+        mean_arr_delay = mean(arr_delay, na.rm = TRUE)
+    )
+```
+
+***
+\pagebreak
+## 4.11: Combining Multiple Data Frames
+### Exercise 17:
+```{r}
+df1 <- data.frame(Respondent_ID = c(1001, 1002, 1003),
+                  Q1_Response = c(55, 62, 39))
+
+df2 <- data.frame(Respondent_ID = c(1002, 1003, 1004),
+                  Q2_Response = c("yes", "no", "yes"))
+```
+
+Guess the results of the following commands. 
+
+a) This will return a data set with *only* ID 1002 and 1003, with Q1 and Q2 responses for each. 
+
+```{r}
+# A
+
+inner_join(x = df1, y = df2, by = "Respondent_ID")
+```
+b) This will give Q2 responses to 1002 and 1003, but 1001's Q2 response will be NA. 
+
+```{r}
+# B
+
+left_join(x = df1, y = df2, by = "Respondent_ID")
+```
+
+c) This will give a data set with all IDs in either data set. The Q1 and Q2 responses will either be filled in if they exist or left NA if they do not.
+
+```{r}
+# C
+
+full_join(x = df1, y = df2, by = "Respondent_ID")
+```
+
+\pagebreak
+d) I'm guessing it'd default to Respondent ID, because that column is in both data frames. So this would be just like (c).
+
+```{r}
+# D
+
+full_join(x = df1, y = df2)
+```
+
+e) This would create a single Response column for the joined data frame, this one with both numbered Q1 responses AND yes/no responses from Q2. This seems like a bad idea.
+
+**update:** It actually returned an error. This makes sense in retrospect as the values in a column (a vector) must all be the same type. 
+
+```{r}
+# E
+
+df1 <- rename(.data = df1, Response = Q1_Response)
+df2 <- rename(.data = df2, Response = Q2_Response)
+
+#full_join(x = df1, y = df2)
+```
+
+f) This would either give the same error as last time or do nothing.
+
+**update:** My guess was correct, it gave the same error as in part (e).
+```{r}
+# F
+
+# inner_join(x = df1, y = df2)
+```
+
+***
+\pagebreak
+### Exercise 18:
+
+```{r}
+df1 <- data.frame(Respondent_ID = c(1000, 1001, 1002, 1003, 1004, 1005, 1006),
+                  Q1_Response = c(55, 62, 39, 45, 70, 77, 56))
+
+df2 <- data.frame(Respondent_ID = c(1003, 1002, 1000, 1004, 1006, 1001, 1005),
+                  Q2_Response = c(12, 17, 23, 24, 19, 30, 20))
+```
+
+```{r}
+# A
+
+inner_join(x = df1, y = df2, by = "Respondent_ID")
+```
+
+```{r}
+# B
+
+inner_join(x = df2, y = df1, by = "Respondent_ID")
+```
+
+a) Thankfully it's smart enough to pick the values that match, so the responses are allocated accordingly.
+
+b) This shows how the merged data frames are ordered, and that's by the data frame assigned to x. 
+
+***
+\pagebreak
+### Exercise 19
+
+```{r}
+dfX <- data.frame(LastName = c("Smith", "Smith", "Jones", "Smith",
+                               "Olsen", "Taylor", "Olsen"),
+                  FirstName = c("John", "Kim", "John", "Marge", "Bill",
+                                "Bill", "Erin"),
+                  Gender = c("M", "F", "M", "F", "M", "M", "F"),
+                  ExamScore = c(75, 80, 64, 78, 90, 89, 79))
+
+dfY <- data.frame(LastName = c("Olsen", "Jones", "Taylor", "Smith",
+                               "Olsen", "Smith", "Smith"),
+                  FirstName = c("Bill", "John", "Bill", "Kim", "Erin",
+                                "John", "Marge"),
+                  Gender = c("M", "M", "M", "F", "F", "M", "F"),
+                  Grade = c("A", "D", "B", "B", "C", "C", "C"))
+```
+
+```{r}
+# A 
+
+full_join(dfX, dfY, by = c("LastName", "FirstName", "Gender"))
+```
+
+```{r}
+# B
+
+full_join(x = dfX, y = dfY, by = c("LastName", "FirstName"))
+```
+
+This creates two separate gender columns, one from the x data frame and one from the y data frame.
+
+\pagebreak
+
+```{r}
+# C
+
+full_join(x = dfX, y = dfY, by = "LastName")
+```
+
+This creates an abomination of a data frame, having separate first name and gender columns! It essentially renders the data useless.

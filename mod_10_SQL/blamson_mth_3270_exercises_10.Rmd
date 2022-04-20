@@ -6,11 +6,14 @@ output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, out.width = "70%")
 library(DBI)
 library(RMySQL)
 library(dplyr)
 ```
+
+# NOTE
+Any random extra query parameters were added due to either curiosity or a desire to shorten the query time. 
 
 # Exercise 1
 
@@ -226,14 +229,24 @@ WHERE dep_time = 2400 OR dep_time BETWEEN 0 and 600 AND year = 2013
 LIMIT 0,5;
 ```
 
-```{sql connection=db_con}
+```{r, eval=FALSE}
 # F
 
-SELECT carrier, month, arr_delay
-FROM flights
-WHERE carrier = 'UA' AND month = 7 AND arr_delay > 120 AND year = 2013
-LIMIT 0,5;
+DBI::dbGetQuery(
+    conn = db_con,
+    statement = "
+        SELECT carrier, month, arr_delay
+        FROM flights
+        WHERE carrier = 'UA' AND month = 7 AND arr_delay > 120 AND year = 2013
+        LIMIT 0,5;
+    "
+)
 ```
+
+```{r}
+knitr::include_graphics("images/prob_f_query.png")
+```
+
 
 ***
 \pagebreak
@@ -302,7 +315,7 @@ This is the same as the previous example, but instead we also calculate the aver
 \pagebreak
 # Exercise 9
 
-```{r}
+```{r, eval=FALSE}
 # A
 
 dbGetQuery(
@@ -316,9 +329,14 @@ dbGetQuery(
 )
 ```
 
+```{r, echo=FALSE}
+knitr::include_graphics("images/prob_9a.png")
+```
+
+
 EWR was the shortest. 
 
-```{r}
+```{r, eval=FALSE}
 # B
 
 dbGetQuery(
@@ -332,12 +350,17 @@ dbGetQuery(
 )
 ```
 
+```{r, echo=FALSE}
+knitr::include_graphics("images/prob_9b.png")
+```
+
+
 LAX was the longest average travel time.
 
 ***
 # Exercise 10
 
-```{r}
+```{r, eval=FALSE}
 # A
 
 dbGetQuery(
@@ -351,9 +374,14 @@ dbGetQuery(
 )
 ```
 
+```{r, echo=FALSE}
+knitr::include_graphics("images/prob_10a.png")
+```
+
+
 ORD had the most flights.
 
-```{r}
+```{r, eval=FALSE}
 # B
 
 dbGetQuery(
@@ -367,4 +395,85 @@ dbGetQuery(
 )
 ```
 
+```{r, echo=FALSE}
+knitr::include_graphics("images/prob_10b.png")
+```
+
 Tailnumber `N128UW` had the most flights.
+
+***
+\pagebreak
+# Exercise 11
+
+```{r, eval=FALSE}
+# A
+
+dbGetQuery(
+    conn = db_con,
+    statement = "SELECT dest, COUNT(*) AS numFlights,
+                AVG(arr_delay) AS avg_arr_delay
+                FROM flights
+                WHERE year = 2013 AND origin = 'BDL'
+                GROUP BY dest
+                HAVING avg_arr_delay > 0;"
+)
+```
+
+```{r, echo=FALSE}
+knitr::include_graphics("images/prob_11a.png")
+```
+
+```{r, eval=FALSE}
+# B
+
+dbGetQuery(
+    conn = db_con,
+    statement = "SELECT dest, COUNT(*) AS numFlights,
+                AVG(arr_delay) AS avg_arr_delay
+                FROM flights
+                WHERE year = 2013 AND origin = 'BDL'
+                GROUP BY dest
+                HAVING avg_arr_delay > 0 AND numFlights > 1000;"
+)
+```
+
+```{r, echo=FALSE}
+knitr::include_graphics("images/prob_11b.png")
+```
+
+***
+# Exercise 12
+
+```{r, eval=FALSE}
+dbGetQuery(
+    conn = db_con,
+    statement = "SELECT carrier, AVG(dep_delay) AS avg_dep_delay
+                FROM flights
+                WHERE year = 2013 AND origin = 'BDL'
+                GROUP BY carrier
+                HAVING avg_dep_delay > 10;"
+)
+```
+
+```{r, echo=FALSE}
+knitr::include_graphics("images/prob_12.png")
+```
+
+***
+
+# Exercise 13
+```{r, eval=FALSE}
+dbGetQuery(conn = db_con,
+           statement = "SELECT dest, COUNT(*) AS numFlights, AVG(arr_delay) AS avg_arr_delay
+                        FROM flights
+                        WHERE year = 2013 AND origin = 'BDL'
+                        GROUP BY dest
+                        HAVING numFlights > 365 * 2
+                        ORDER BY avg_arr_delay ASC
+                        LIMIT 5, 4;"
+)
+```
+
+```{r, echo=FALSE}
+knitr::include_graphics("images/prob_13.png")
+```

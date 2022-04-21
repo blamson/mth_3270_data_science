@@ -7,6 +7,8 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(stringr)
 ```
 
 # Chapter 13
@@ -28,5 +30,195 @@ mosaic::tally(~ result, format = "percent", data = sim_meet)
 
 ```{r}
 mosaic::binom.test(~result, n, success = "They meet", data = sim_meet)
+```
+
+***
+\pagebreak
+## Problem 9
+
+Generate $n = 5000$ observations from a logistic regression model with parameters intercept $\beta_0 = -1$, slope $\beta_1 = 0.5$, and distribution of the predictor being normal with mean $\mu = 1$ and standard deviation $\sigma = 1$. Calculate and interpret the resulting parameter estimates and confidence intervals.
+
+```{r}
+set.seed(500)
+
+# Generate 5000 predictor variables
+x <- rnorm(n = 5000, mean = 1, sd = 1)
+
+# Set beta values
+beta_0 <- -1
+beta_1 <- 0.5
+
+# Generate set of probabilities
+true_probs <- exp(beta_0 + beta_1 * x) / (1 + exp(beta_0 + beta_1 * x))
+
+# Feed probabilities into a binomial function
+y <- rbinom(n = 5000, size = 1, prob = true_probs)
+
+# Generate data frame using predictor and probability values
+sim_data <- dplyr::tibble(X = x, Y = y)
+```
+
+```{r}
+log_reg <- glm(Y ~ X, data = sim_data, family = "binomial")
+
+log_summary <- summary(log_reg)
+log_summary
+```
+
+```{r}
+# log_summary$coefficients holds the data frame for the coefficients. 
+# Column 1 is the estimated values, column 2 is the standard errors
+
+beta_0_est <- log_summary$coefficients[1,1]
+beta_0_error <- log_summary$coefficients[1,2]
+beta_1_est <- log_summary$coefficients[2,1]
+beta_1_error <- log_summary$coefficients[1,2]
+```
+
+```{r}
+# Create function to help calc intervals
+
+calc_ci <- function(estimate, error) {
+    low <- estimate - (2 * error)
+    high <- estimate + (2 * error)
+    
+    c(low, high)
+}
+    
+```
+
+```{r}
+# Calculate confidence intervals and round
+
+beta_0_ci <- calc_ci(beta_0_est, beta_0_error) %>% round(3)
+beta_1_ci <- calc_ci(beta_1_est, beta_1_error) %>% round(3)
+```
+
+```{r, echo=FALSE}
+glue::glue("
+           The confidence interval for beta 0 is [{beta_0_ci[1]}, {beta_0_ci[2]}].
+           The confidence interval for beta 1 is [{beta_1_ci[1]}, {beta_1_ci[2]}].
+")
+```
+
+The parameter estimates were largely spot on! The confidence intervals are relatively small and neatly capture the true parameter value.
+
+***
+\pagebreak
+# Chapter 19
+## Problem 3
+
+**Note:** Copying and pasting these into this messes with the formatting of this page a bit. I'm not sure how to fix that! 
+
+**Guesses:**
+
+- 1: str_subset(x, pattern = "pop")
+
+    - This will return the first 7 words in the vector, specifically because they all have "pop" in them. 
+    
+- 2: str_detect(x, pattern = "^pop")
+
+    - This will return a vector of booleans, the first 6 being TRUE. The rest will be FALSE.
+    
+- 3: str_detect(x, pattern = "populari[sz]e")
+
+    - Index 3 and 4 will be TRUE, the rest of the vector will be FALSE.
+
+- 4: str_detect(x, pattern = "pop.*e")
+
+    - This looks for words containing some combination of [pop...e]. Indices 3, 4, 7 will be TRUE, the rest FALSE.
+    
+- 5: str_detect(x, pattern = "p[a-z]*e")
+
+    - This looks for any number of any letter contained between a "p" and an "e". Indices 3, 4, 7, 8 will be TRUE, the rest FALSE (though im unsure of index 10 here).
+
+- 6: str_detect(x, pattern = "\^[Pp][a-z]+.*n")
+
+    - This looks for words starting with either "P" or "p", followed by any letter. The plus indicates any number of letters, followed by any number of any type of character. Finally, we end with an n. This applies to indices 6 and 12. So those will be TRUE, the rest FALSE.
+
+- 7: str_subset(x, pattern = "\^[^Pp]")
+
+    - This just looks for words starting with anything BUT "P" or "p". So this returns indices 7, 8, 9 and 11. 
+
+- 8: str_detect(x, pattern = "\^[A-Za-p]")
+
+    - This looks for words starting with either a capital letter or a lowercase letter. That applies to everything BUT index 10. So index 10 is TRUE, all the rest are false. 
+
+- 9: str_detect(x, pattern = "[ ]")
+
+    - This just looks for a space character which is found in indices 9, 10 and 11. Those three will be TRUE, the rest FALSE. 
+
+- 10: str_subset(x, pattern = "[\t]")
+
+    - This looks for a tab. One is found on index 10, so that is the only string returned by this. 
+
+- 11: str_detect(x, pattern = "[ \t]")
+
+    - Same as last time, but this also wants a space before the tab. Nothing meets that criteria, so this will return a vector of only FALSE values.
+
+- 12: str_subset(x, pattern = "^[ ]")
+
+    - This returns a vector containing any string starting with a space, which is index 11. 
+    
+**Running commands:**
+
+```{r}
+x <- c("popular", "popularity", "popularize", "popularise", "Popular",
+       "population", "repopulate", "reproduce", "happy family",
+       "happier\tfamily", " happy family", "P6dn")
+
+str_subset(x, pattern = "pop")                  #1
+str_detect(x, pattern = "^pop")                 #2
+str_detect(x, pattern = "populari[sz]e")        #3
+str_detect(x, pattern = "pop.*e")               #4
+str_detect(x, pattern = "p[a-z]*e")             #5
+str_detect(x, pattern = "^[Pp][a-z]+.*n")       #6
+str_subset(x, pattern = "^[^Pp]")               #7
+str_detect(x, pattern = "^[A-Za-p]")            #8
+str_detect(x, pattern = "[ ]")                  #9
+str_subset(x, pattern = "[\t]")                 #10
+str_detect(x, pattern = "[ \t]")                #11
+str_subset(x, pattern = "^[ ]")                 #12
+```
+
+    
+***
+## Problem 4
+
+Use the `babynames` data table from the `babynames` package to find the 10 most popular:
+
+    - a: Boys names ending in a vowel.
+    
+    - b: Names ending with `joe`, `jo`, `Joe`, `Jo` (e.g., Billyjoe).
+
+```{r}
+# A
+# Firstly I want to make sure I don't save babynames as a variable. It's HUGE, so we pipe 
+# it in directly. Secondly we filter using str_detect, putting all the vowels in brackets. 
+# Include sex requirement as well. From there you just group the names together and sum up
+# the counts for all of the years. 
+# Sort in descending order and restrict to the top 10 and you're done!  
+
+babynames::babynames %>%
+    filter(
+        stringr::str_detect(string = name, pattern = "[AEIOUaeiou]$") & sex == "M"
+    ) %>%
+    group_by(name) %>%
+    summarise(popularity = sum(n)) %>%
+    arrange(desc(popularity)) %>%
+    head(n = 10)
+```
+
+```{r}
+# B
+
+babynames::babynames %>%
+    filter(
+        stringr::str_detect(string = name, pattern = "(joe|jo|Joe|Jo)$")
+    ) %>%
+    group_by(name) %>%
+    summarise(popularity = sum(n)) %>%
+    arrange(desc(popularity)) %>%
+    head(n = 10)
 ```
 

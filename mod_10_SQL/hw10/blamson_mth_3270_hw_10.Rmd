@@ -1,0 +1,114 @@
+---
+title: "Homework 10"
+author: "Brady Lamson"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(mdsr)
+library(RMySQL)
+```
+
+```{r}
+# Open a connection to the airlines database:
+db_conn <- dbConnect_scidb("airlines")
+```
+
+First let's see what is even in flights for future reference. 
+
+```{r}
+dbGetQuery(conn = db_conn,
+           statement = "DESCRIBE flights;"
+)
+```
+
+***
+\pagebreak
+# Problem 2
+
+```{r}
+dbGetQuery(conn = db_conn,
+           statement = "SELECT DISTINCT year
+                        FROM flights;"
+)
+```
+
+***
+# Exercise 3
+
+```{r}
+dbGetQuery(conn = db_conn,
+           statement = "SELECT COUNT(*) AS number_of_flights
+                        FROM flights
+                        WHERE dest = 'DFW' AND year = 2010 AND month = 5 AND day = 14;"
+)
+```
+
+***
+# Problem 5
+
+```{r}
+dbGetQuery(conn = db_conn,
+           statement = "SELECT dest, COUNT(*) AS frequency
+                        FROM flights
+                        WHERE origin = 'ORD' AND year = 2010
+                        GROUP BY dest
+                        ORDER BY frequency DESC
+                        LIMIT 5;"
+)
+```
+
+***
+# Problem 6
+
+```{r}
+dbGetQuery(conn = db_conn,
+           statement = "SELECT dest, AVG(arr_delay) AS avg_arr_delay
+                        FROM flights
+                        WHERE year = 2010
+                        GROUP BY dest
+                        ORDER BY avg_arr_delay DESC
+                        LIMIT 5;"
+)
+```
+
+***
+# Problem 8
+
+```{r}
+dbGetQuery(conn = db_conn,
+           statement = "SELECT carrier, flight
+                        FROM flights
+                        WHERE year = 1990 AND day = 26 AND month = 9 AND origin = 'LAX' AND dest = 'JFK';"
+)
+```
+
+This returns 0 flights. This is both surprising and unsurprising. Unsurprising because our previous `SELECT DISTINCT year` query returned only flights from 2010 to 2017, but this is surprising because I don't know why this is a problem being asked in the first place. 
+
+```{r, eval=FALSE, echo=FALSE}
+# TESTING W/ DR. GREVSTAD ----------------------------------
+
+# Open a connection to the airlines database:
+db_conn <- dbConnect_scidb("airlines")
+
+# Equivalent connection, only have it here for testing purposes.
+db_conn <- dbConnect(drv = MySQL(),
+                    dbname = "airlines",
+                    host = "mdsr.cdc7tgkkqd0n.us-east-1.rds.amazonaws.com",
+                    user = "mdsr_public",
+                    password = "ImhsmflMDSwR")
+
+dbGetQuery(conn = db_conn,
+           statement = "SELECT DISTINCT year
+                        FROM flights;"
+)
+
+dbGetQuery(conn = db_conn,
+           statement = "SELECT carrier, flight
+                        FROM flights
+                        WHERE year = 1990;"
+)
+```

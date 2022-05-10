@@ -477,3 +477,269 @@ dbGetQuery(conn = db_con,
 ```{r, echo=FALSE}
 knitr::include_graphics("images/prob_13.png")
 ```
+
+***
+\pagebreak
+# Exercise 14
+
+```{r}
+dbGetQuery(conn = db_con,
+           statement = "SELECT dest, flight, carrier, airports.name
+                        FROM flights
+                        JOIN airports ON flights.dest = airports.faa
+                        WHERE year = 2013 AND month = 6 AND day = 26 AND origin = 'BDL'
+                        LIMIT 10;"
+)
+```
+
+The destination airport for flight 4714 is Neward Liberty Intl. 
+
+***
+\pagebreak
+# Exercise 15
+
+```{r}
+# A
+
+dbGetQuery(conn = db_con,
+           statement = "SELECT dest, flight, carriers.carrier
+                        FROM flights
+                        JOIN carriers ON flights.carrier = carriers.carrier
+                        WHERE year = 2013 AND month = 6 AND day = 26 AND origin = 'BDL' AND dest = 'MSP'
+                        LIMIT 10;"
+)
+```
+
+```{r}
+# B
+
+dbGetQuery(conn = db_con,
+           statement = "SELECT dest, flight, carriers.carrier, carriers.name
+                        FROM flights
+                        JOIN carriers ON flights.carrier = carriers.carrier
+                        WHERE year = 2013 AND month = 6 AND day = 26 AND origin = 'BDL' AND name = 'Mesa Airlines Inc.'
+                        LIMIT 50;"
+)
+```
+
+***
+\pagebreak
+# Exercise 16
+
+```{r, eval=FALSE}
+dbGetQuery(conn = db_con,
+           statement = "SELECT origin, dest, name AS dest_name, flight, carrier
+                        FROM flights
+                        LEFT JOIN airports ON flights.dest = airports.faa
+                        WHERE year = 2013 AND month = 6 AND day = 26 AND origin = 'PBI';")
+```
+
+```{r, eval=FALSE}
+dbGetQuery(conn = db_con,
+           statement = "SELECT origin, dest, name AS dest_name, flight, carrier
+                        FROM flights
+                        JOIN airports ON flights.dest = airports.faa
+                        WHERE year = 2013 AND month = 6 AND day = 26 AND origin = 'PBI';")
+```
+
+`LEFT JOIN` returns everything that matches the query for the flights dataset. Rows that don't have information in the airports dataset are kept, just get NAs tacked onto stuff that doesn't apply. `JOIN` doesn't work that way, and will exclude rows that aren't in both. Based on `JOIN` returning one less, it can be assumed that there's one row that isn't in both. 
+
+***
+
+# Exercise 17
+
+```{r, eval=FALSE}
+dbGetQuery(conn = db_con,
+           statement = "(SELECT year, month, day, origin, dest, flight, carrier
+                        FROM flights
+                        WHERE year = 2013 AND month = 6 AND day = 26
+                        AND origin = 'BDL' AND dest = 'ORD')
+                        UNION
+                        (SELECT year, month, day, origin, dest, flight, carrier
+                        FROM flights
+                        WHERE year = 2013 AND month = 6 AND day = 26
+                        AND origin = 'MSP' AND dest = 'JFK');"
+)
+
+```
+
+This query is a combination of the flights on June 6th, 2016 where **either** (the origin is BDL **and** the destination is ORD) **or** (the origin is MSP **and** the destination is JFK). 
+
+***
+\pagebreak
+# Exercise 18
+
+```{r, eval=FALSE}
+dbGetQuery(conn = db_con,
+           statement = "SELECT dest, COUNT(*)
+                        FROM flights
+                        WHERE year = 2013
+                        AND origin = 'BDL'
+                        AND dest IN
+                            (SELECT faa
+                            FROM airports
+                            WHERE tz < -7)
+                        GROUP BY dest;"
+)
+```
+
+```{r, echo=FALSE}
+knitr::include_graphics("images/prob_18.png")
+```
+
+
+LAS and LAX were the two destinations traveled to.
+
+***
+# Exercise 19
+
+```{r, eval=FALSE}
+dbGetQuery(conn = db_con,
+           statement = "SELECT dest, COUNT(*)
+                        FROM flights
+                        WHERE year = 2013
+                        AND origin = 'JFK'
+                        AND dest IN
+                            (SELECT faa
+                            FROM airports
+                            WHERE tz < -8)
+                        GROUP BY dest;"
+)
+```
+
+```{r, echo=FALSE}
+knitr::include_graphics("images/prob_19.png")
+```
+
+HNL was the only airport traveled to.
+
+***
+\pagebreak
+# Exercise 20
+
+```{r}
+flights <- tbl(db_con, "flights")
+carriers <- tbl(db_con, "carriers")
+```
+
+```{r}
+flights %>%
+    select(carrier, tailnum) %>%
+    head()
+```
+
+***
+\pagebreak
+# Exercise 21
+
+```{r}
+# A
+
+flights %>%
+    filter(arr_delay > 120) %>%
+    head()
+```
+
+```{r}
+# B
+
+# Note: select() added just to showcase the query working w/ less columns. 
+flights %>%
+    select(dest, tailnum, carrier) %>%
+    filter(dest %in% c('IAH', 'HOU')) %>%
+    head()
+```
+
+```{r}
+# C
+
+# summarise used to showcase the query working and not only returning AA flights.
+flights %>%
+    select(dest, tailnum, carrier) %>%
+    filter(carrier %in% c('UA', 'AA', 'DL')) %>%
+    group_by(carrier) %>%
+    summarise(count = n())
+```
+
+```{r, eval=FALSE}
+# D
+
+flights %>%
+    select(dest, tailnum, month) %>%
+    filter(between(month, 7, 9)) %>%
+    group_by(month) %>%
+    summarise(count = n())
+```
+
+```{r, echo=FALSE}
+knitr::include_graphics("images/prob_21d.png")
+```
+
+```{r}
+# E
+
+flights %>%
+    filter(dep_time == 2400 | between(dep_time, 0, 600)) %>%
+    head()
+```
+
+```{r}
+# F
+
+flights %>% 
+    filter(carrier == 'UA' & month == 7 & arr_delay > 120) %>%
+    head()
+```
+
+***
+\pagebreak
+# Exercise 22
+
+```{r}
+db_con <- dbConnect(drv = RSQLite::SQLite(),
+                    dbname = ":memory:")
+```
+
+```{r}
+dbWriteTable(conn = db_con,
+             name = "whoTable",
+             value = tidyr::who)
+
+#Load the population table:
+dbWriteTable(conn = db_con,
+             name = "popTable",
+             value = tidyr::population)
+```
+
+```{r}
+# A
+
+dbGetQuery(conn = db_con,
+           statement = "SELECT country, year, new_sp_m014
+                        FROM whoTable
+                        LIMIT 10;")
+```
+
+```{r}
+dbGetQuery(conn = db_con,
+           statement = "SELECT country, year, new_sp_m014
+                        FROM whoTable
+                        WHERE country = 'United States of America' AND year >= 2010
+                        LIMIT 10;")
+```
+
+***
+\pagebreak
+# Exercise 23
+
+```{r}
+dbGetQuery(conn = db_con,
+           statement = "SELECT country, year, AVG(new_sp_m014) AS avg_m014
+                        FROM whoTable
+                        WHERE year = 2013
+                        GROUP BY country
+                        ORDER BY avg_m014 ASC
+                        LIMIT 10;")
+```
+
+Only got NAs here, not sure how to fix this in SQL. 
